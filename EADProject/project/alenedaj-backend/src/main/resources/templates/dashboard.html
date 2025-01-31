@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Dashboard</title>
+</head>
+<body th:replace="layout :: base(~{::body})">
+<div>
+    <h2>User Dashboard</h2>
+
+    <!-- User Information Section -->
+    <section id="userInfo">
+        <h3>Your Information</h3>
+        <form th:action="@{/api/auth/user-info}" method="get" id="userInfoForm">
+            <div>
+                <label for="userEmail">Email:</label>
+                <input type="email" name="email" id="userEmail" required />
+            </div>
+            <button type="submit">Get Info</button>
+        </form>
+        <div id="userInfoDisplay"></div>
+    </section>
+
+    <!-- Email Verification Section -->
+    <section id="emailVerification">
+        <h3>Send Email Verification</h3>
+        <form th:action="@{/api/auth/send-verification}" method="post" id="verifyForm">
+            <div>
+                <label for="verifyEmail">Email:</label>
+                <input type="email" name="email" id="verifyEmail" required />
+            </div>
+            <button type="submit">Send Verification</button>
+        </form>
+        <div id="verificationMessage"></div>
+    </section>
+
+    <!-- Update Location Section -->
+    <section id="updateLocation">
+        <h3>Update Your Location</h3>
+        <form th:action="@{/api/auth/update-location/}" method="put" id="locationForm">
+            <div>
+                <label for="userId">User ID:</label>
+                <input type="text" name="userId" id="userId" required />
+            </div>
+            <div>
+                <label for="location">Location:</label>
+                <input type="text" name="location" id="location" required />
+            </div>
+            <button type="submit">Update Location</button>
+        </form>
+        <div id="locationMessage"></div>
+    </section>
+
+    <script>
+        // Fetch user info
+        document.getElementById("userInfoForm").addEventListener("submit", function(e){
+            e.preventDefault();
+            const email = document.getElementById("userEmail").value;
+            const url = this.action + '?email=' + encodeURIComponent(email);
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById("userInfoDisplay").innerText =
+                        "Email: " + data.email + " | Role: " + data.role;
+                })
+                .catch(err => {
+                    document.getElementById("userInfoDisplay").innerText = "Error fetching user info";
+                });
+        });
+
+        // Send email verification
+        document.getElementById("verifyForm").addEventListener("submit", function(e){
+            e.preventDefault();
+            const email = document.getElementById("verifyEmail").value;
+            const url = this.action + '?email=' + encodeURIComponent(email);
+            fetch(url, { method: "POST" })
+                .then(response => response.text())
+                .then(message => {
+                    document.getElementById("verificationMessage").innerText = message;
+                })
+                .catch(err => {
+                    document.getElementById("verificationMessage").innerText = "Error sending verification";
+                });
+        });
+
+        // Update location
+        document.getElementById("locationForm").addEventListener("submit", function(e){
+            e.preventDefault();
+            const userId = document.getElementById("userId").value;
+            const location = document.getElementById("location").value;
+            const url = this.action + userId;
+            fetch(url, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(location)
+            })
+                .then(response => response.text())
+                .then(message => {
+                    document.getElementById("locationMessage").innerText = message;
+                })
+                .catch(err => {
+                    document.getElementById("locationMessage").innerText = "Error updating location";
+                });
+        });
+    </script>
+</div>
+</body>
+</html>

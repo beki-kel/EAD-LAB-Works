@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Register</title>
+</head>
+<body th:replace="layout :: base(~{::body})">
+<div>
+    <h2>Register</h2>
+    <form th:action="@{/api/auth/register}" method="post" id="registerForm">
+        <div>
+            <label for="email">Email:</label>
+            <input type="email" name="email" id="email" required />
+        </div>
+        <div>
+            <label for="password">Password:</label>
+            <input type="password" name="password" id="password" required />
+        </div>
+        <button type="submit">Register</button>
+    </form>
+    <div id="registerMessage"></div>
+
+    <script>
+        document.getElementById("registerForm").addEventListener("submit", function(e){
+            e.preventDefault();
+            const email = document.getElementById("email").value;
+            const password = document.getElementById("password").value;
+            fetch(this.action, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email, password })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById("registerMessage").innerText = data.message;
+                })
+                .catch(error => {
+                    document.getElementById("registerMessage").innerText = "An error occurred";
+                });
+        });
+    </script>
+</div>
+</body>
+</html>

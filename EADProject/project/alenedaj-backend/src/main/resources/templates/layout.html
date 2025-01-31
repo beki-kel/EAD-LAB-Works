@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <!-- Use the model attribute "pageTitle" if provided -->
+    <title th:text="${pageTitle}">My App</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}" />
+</head>
+<body>
+<!-- Define a fragment "base" that accepts a parameter named "content" -->
+<div th:fragment="base(content)">
+    <header>
+        <nav>
+            <ul>
+                <li><a th:href="@{/login}">Login</a></li>
+                <li><a th:href="@{/register}">Register</a></li>
+                <li><a th:href="@{/dashboard}">Dashboard</a></li>
+                <li><a th:href="@{/admin/gas-stations}">Gas Stations</a></li>
+                <li>
+                    <a th:href="@{/logout}"
+                       onclick="event.preventDefault(); document.getElementById('logoutForm').submit();">
+                        Logout
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- This container is where page-specific content will be injected -->
+    <div class="container">
+        <div th:replace="${content}"></div>
+    </div>
+
+    <!-- Hidden logout form -->
+    <form id="logoutForm" th:action="@{/logout}" method="post" style="display:none;"></form>
+
+    <footer>
+        <p>&copy; 2025 My Gas Station App</p>
+    </footer>
+</div>
+</body>
+</html>

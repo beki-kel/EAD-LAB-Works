@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Admin Gas Stations</title>
+</head>
+<body th:replace="layout :: base(~{::body})">
+<div>
+    <h2>Gas Station Administration</h2>
+
+    <!-- Add Gas Station Section -->
+    <section id="addGasStation">
+        <h3>Add Gas Station</h3>
+        <form th:action="@{/api/admin/gas-stations}" method="post" id="addStationForm">
+            <div>
+                <label for="stationName">Station Name:</label>
+                <input type="text" name="stationName" id="stationName" required />
+            </div>
+            <div>
+                <label for="location">Location:</label>
+                <input type="text" name="location" id="location" required />
+            </div>
+            <button type="submit">Add Gas Station</button>
+        </form>
+        <div id="addStationMessage"></div>
+    </section>
+
+    <!-- Update Traffic Section -->
+    <section id="updateTraffic">
+        <h3>Update Traffic Level</h3>
+        <form th:action="@{/api/admin/gas-stations/update-traffic/}" method="put" id="updateTrafficForm">
+            <div>
+                <label for="stationId">Station ID:</label>
+                <input type="text" name="stationId" id="stationId" required />
+            </div>
+            <div>
+                <label for="trafficLevel">Traffic Level:</label>
+                <input type="text" name="trafficLevel" id="trafficLevel" required />
+            </div>
+            <button type="submit">Update Traffic</button>
+        </form>
+        <div id="trafficMessage"></div>
+    </section>
+
+    <!-- Station Info Section -->
+    <section id="stationInfo">
+        <h3>Station Info</h3>
+        <form id="stationInfoForm">
+            <div>
+                <label for="userIdInfo">User ID:</label>
+                <input type="text" id="userIdInfo" required />
+            </div>
+            <div>
+                <label for="stationIdInfo">Station ID:</label>
+                <input type="text" id="stationIdInfo" required />
+            </div>
+            <div>
+                <label for="userLat">Your Latitude:</label>
+                <input type="number" step="any" id="userLat" required />
+            </div>
+            <div>
+                <label for="userLon">Your Longitude:</label>
+                <input type="number" step="any" id="userLon" required />
+            </div>
+            <button type="button" id="getDistanceBtn">Get Distance</button>
+            <button type="button" id="getDirectionsBtn">Get Directions</button>
+        </form>
+        <div id="stationResponse"></div>
+    </section>
+
+    <script>
+        // Add Gas Station
+        document.getElementById("addStationForm").addEventListener("submit", function(e) {
+            e.preventDefault();
+            const stationName = document.getElementById("stationName").value;
+            const location = document.getElementById("location").value;
+            fetch(this.action, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ stationName, location })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById("addStationMessage").innerText = "Gas station added successfully";
+                })
+                .catch(err => {
+                    document.getElementById("addStationMessage").innerText = "Error adding gas station";
+                });
+        });
+
+        // Update Traffic Level
+        document.getElementById("updateTrafficForm").addEventListener("submit", function(e) {
+            e.preventDefault();
+            const stationId = document.getElementById("stationId").value;
+            const trafficLevel = document.getElementById("trafficLevel").value;
+            const url = this.action + stationId;
+            fetch(url, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(trafficLevel)
+            })
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById("trafficMessage").innerText = "Traffic updated successfully";
+                })
+                .catch(err => {
+                    document.getElementById("trafficMessage").innerText = "Error updating traffic";
+                });
+        });
+
+        // Get Distance
+        document.getElementById("getDistanceBtn").addEventListener("click", function() {
+            const userId = document.getElementById("userIdInfo").value;
+            const stationId = document.getElementById("stationIdInfo").value;
+            const url = `/api/admin/gas-stations/distance/${userId}/${stationId}`;
+            fetch(url)
+                .then(response => response.json())
+                .then(distance => {
+                    document.getElementById("stationResponse").innerText = "Distance: " + distance + " km";
+                })
+                .catch(err => {
+                    document.getElementById("stationResponse").innerText = "Error fetching distance";
+                });
+        });
+
+        // Get Directions
+        document.getElementById("getDirectionsBtn").addEventListener("click", function() {
+            const stationId = document.getElementById("stationIdInfo").value;
+            const userLat = document.getElementById("userLat").value;
+            const userLon = document.getElementById("userLon").value;
+            const url = `/api/admin/gas-stations/directions/${stationId}?userLat=${encodeURIComponent(userLat)}&userLon=${encodeURIComponent(userLon)}`;
+            fetch(url)
+                .then(response => response.text())
+                .then(directions => {
+                    document.getElementById("stationResponse").innerText = "Directions: " + directions;
+                })
+                .catch(err => {
+                    document.getElementById("stationResponse").innerText = "Error fetching directions";
+                });
+        });
+    </script>
+</div>
+</body>
+</html>
