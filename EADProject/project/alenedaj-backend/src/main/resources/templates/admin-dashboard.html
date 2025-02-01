@@ -3,13 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <title>Admin Dashboard - ale nedaj</title>
-    <!-- Dashboard and Common CSS -->
-    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
     <link rel="stylesheet" th:href="@{/css/style.css}">
-    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <link rel="stylesheet" th:href="@{/css/user-dashboard.css}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* Global loading indicator */
         #globalLoading {
             position: fixed;
             top: 0;
@@ -22,10 +20,10 @@
             display: none;
             z-index: 1000;
         }
-        /* Location search styling */
         .location-search-container {
-            margin: 10px 0;
+            margin: auto;
             display: flex;
+            justify-content: center;
             gap: 10px;
             align-items: center;
         }
@@ -40,7 +38,6 @@
             font-style: italic;
             color: #555;
         }
-        /* Inline styling for card actions */
         .card-actions {
             position: absolute;
             top: 10px;
@@ -50,7 +47,6 @@
             display: inline-block;
             margin-left: 5px;
         }
-        /* Decorated Station Card */
         .station-card {
             background: #fff;
             border: 1px solid #ddd;
@@ -71,13 +67,16 @@
     </style>
 </head>
 <body>
-<!-- Global loading indicator -->
 <div id="globalLoading">Loading...</div>
 
 <div class="dashboard-container">
     <nav class="sidebar">
         <div class="logo">
-            <h2>ale nedaj</h2>
+            <picture>
+                <source media="(max-width: 768px)" srcset="/images/logo_text2.png">
+                <source media="(min-width: 769px)" srcset="/images/logo_with_text-2.png">
+                <img src="/images/logo_with_text-2.png" width="150" alt="Logo with Text">
+            </picture>
         </div>
         <ul class="nav-list">
             <li class="active" data-tab="tab-add"><i class="fa fa-plus"></i> Add Station</li>
@@ -87,26 +86,22 @@
         </ul>
     </nav>
     <div class="main-content">
-        <header>
+        <header class="user-header">
             <h1>Admin Dashboard</h1>
         </header>
         <div class="tabs">
-            <!-- Tab: Add Gas Station -->
             <div class="tab-content active" id="tab-add">
                 <h2>Add Gas Station</h2>
                 <form id="addStationForm">
                     <label for="stationName">Station Name:</label>
                     <input type="text" id="stationName" name="stationName" required>
 
-                    <!-- Location Search Input -->
                     <label for="locationSearch">Location:</label>
                     <div id="locationSearchContainer" class="location-search-container">
                         <input type="text" id="locationSearch" placeholder="Enter location (e.g., Addis Ababa, Ethiopia)">
                         <button type="button" id="locateBtn" class="button"><i class="fa fa-search"></i> Locate</button>
                     </div>
-                    <!-- Display the formatted location -->
                     <div id="locationDisplay" class="location-display"></div>
-                    <!-- Hidden fields for coordinates and formatted location -->
                     <input type="hidden" id="latitude" name="latitude">
                     <input type="hidden" id="longitude" name="longitude">
                     <input type="hidden" id="location" name="location">

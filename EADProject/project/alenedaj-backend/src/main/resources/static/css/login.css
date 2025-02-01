@@ -17,9 +17,9 @@ body {
 #sendVerificationBtn{
     background: none;
     text-align: end;
-    font-weight: normal;
+    font-weight: bold;
     font-size: 15px;
-    color: #56a8ff;
+    color: rgb(82, 115, 254);
     margin-bottom: 20px;
     padding: 0;
 }
@@ -101,7 +101,7 @@ input {
 button {
     width: 100%;
     padding: 10px;
-    background: #007BFF;
+    background: rgb(82, 115, 254);
     color: white;
     font-weight: bold;
     border: none;
@@ -110,13 +110,23 @@ button {
     border-radius: 5px;
     cursor: pointer;
 }
+.button{
+    background: rgb(82, 115, 254);
+}
 
-button:hover {
-    background: #0056b3;
+/*.button:disabled,*/
+/*#sendVerificationBtn:disabled {*/
+/*    background: #ccc;      !* Grey background when disabled *!*/
+/*    color: #666;           !* Optional: adjust text color *!*/
+/*    cursor: not-allowed;   !* Visual cue for disabled button *!*/
+/*}*/
+
+.button:hover {
+    background: rgb(38, 77, 255);
 }
 
 .register {
-    color: #56a8ff;
+    color: rgb(82, 115, 254);
 }
 
 .register:hover {

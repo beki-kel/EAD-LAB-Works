@@ -3,14 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <title>User Dashboard - ale nedaj</title>
-    <!-- Common and Dashboard CSS -->
+    <link rel="stylesheet" th:href="@{/css/style.css}">
     <link rel="stylesheet" th:href="@{/css/dashboard.css}">
     <link rel="stylesheet" th:href="@{/css/user-dashboard.css}">
-    <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* Optional inline adjustments for consistency */
-        /* Global loading indicator */
         #globalLoading {
             position: fixed;
             top: 0;
@@ -26,51 +23,47 @@
     </style>
 </head>
 <body>
-<!-- Global Loading Indicator -->
 <div id="globalLoading">Loading...</div>
 
-<!-- Dashboard Container: Using a similar sidebar layout as Admin Dashboard -->
 <div class="dashboard-container">
     <nav class="sidebar">
         <div class="logo">
-            <h2>ale nedaj</h2>
+            <picture>
+                <source media="(max-width: 768px)" srcset="/images/logo_text2.png">
+                <source media="(min-width: 769px)" srcset="/images/logo_with_text-2.png">
+                <img src="/images/logo_with_text-2.png" width="150" alt="Logo with Text">
+            </picture>
         </div>
         <ul class="nav-list">
-            <!-- We reuse a similar sidebar menu; you may add additional items if needed -->
             <li class="active" data-tab="tab-home"><i class="fa fa-home"></i> Home</li>
             <li data-tab="tab-location"><i class="fa fa-map-marker-alt"></i> My Location</li>
             <li data-tab="tab-stations"><i class="fa fa-gas-pump"></i> Gas Stations</li>
         </ul>
     </nav>
+
     <div class="main-content">
-        <!-- Header with Logout -->
         <header class="user-header">
             <h1>User Dashboard</h1>
-            <button id="logoutBtn" class="button logout-btn"><i class="fa fa-sign-out-alt"></i> Logout</button>
+            <button id="logoutBtn" class=" logout-btn"><i class="fa fa-sign-out-alt"></i></button>
         </header>
-        <!-- Hidden field for current user id (set by server-side code or JavaScript) -->
         <input type="hidden" id="userId" value="PUT_USER_ID_HERE">
 
-        <!-- Tab Contents -->
         <div class="tabs">
-            <!-- Tab: Home (Welcome and instructions) -->
             <div class="tab-content active" id="tab-home">
                 <h2>Welcome!</h2>
                 <p>Use the "My Location" tab to update your current location. Your location is used to calculate the distance to nearby gas stations.</p>
                 <p>Then, visit the "Gas Stations" tab to view details about each station, including the distance from your location. You can also update the traffic level for any station.</p>
             </div>
 
-            <!-- Tab: My Location -->
             <div class="tab-content" id="tab-location">
                 <h2>Update My Location</h2>
                 <form id="updateLocationForm">
                     <label for="userLocationSearch">Enter Your Location:</label>
                     <div class="location-search-container">
                         <input type="text" id="userLocationSearch" placeholder="e.g., Addis Ababa, Ethiopia" required>
-                        <button type="button" id="userLocateBtn" class="button"><i class="fa fa-search"></i> Locate</button>
+                        <button type="button" id="userLocateBtn" id="searchButton"><i class="fa fa-search"></i></button>
                     </div>
                     <div id="userLocationDisplay" class="location-display"></div>
-                    <!-- Hidden fields -->
                     <input type="hidden" id="userLatitude" name="userLatitude">
                     <input type="hidden" id="userLongitude" name="userLongitude">
                     <input type="hidden" id="userLocation" name="userLocation">
@@ -78,20 +71,16 @@
                 </form>
             </div>
 
-            <!-- Tab: Gas Stations -->
             <div class="tab-content" id="tab-stations">
                 <h2>Nearby Gas Stations</h2>
                 <div id="stationsContainer" class="stations-container">
-                    <!-- Gas station cards will be dynamically loaded here -->
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- JavaScript Section -->
 <script>
-    // --- Global Loading Indicator ---
     function showLoading() {
         document.getElementById('globalLoading').style.display = 'block';
     }
@@ -99,7 +88,6 @@
         document.getElementById('globalLoading').style.display = 'none';
     }
 
-    // --- Tab Switching Logic (similar to Admin Dashboard) ---
     const navItems = document.querySelectorAll('.nav-list li');
     const tabContents = document.querySelectorAll('.tab-content');
     navItems.forEach(item => {
@@ -116,7 +104,6 @@
         });
     });
 
-    // --- Logout Functionality ---
     document.getElementById('logoutBtn').addEventListener('click', function() {
         showLoading();
         fetch('/auth/api/logout', { method: 'POST' })
@@ -132,7 +119,6 @@
             });
     });
 
-    // --- Update User Location ---
     const userLocateBtn = document.getElementById('userLocateBtn');
     userLocateBtn.addEventListener('click', function() {
         const searchQuery = document.getElementById('userLocationSearch').value;
@@ -147,9 +133,7 @@
                 hideLoading();
                 if (data.length > 0) {
                     const result = data[0];
-                    // Update the visible input with the found location
                     document.getElementById('userLocationSearch').value = result.display_name;
-                    // Store values in hidden fields
                     document.getElementById('userLatitude').value = result.lat;
                     document.getElementById('userLongitude').value = result.lon;
                     document.getElementById('userLocation').value = result.display_name;
@@ -166,7 +150,6 @@
 
     document.getElementById('updateLocationForm')?.addEventListener('submit', function(e) {
         e.preventDefault();
-        // Update user location via API
         const userId = document.getElementById('userId').value;
         if (!document.getElementById('userLatitude').value || !document.getElementById('userLongitude').value || !document.getElementById('userLocation').value) {
             alert("Please locate a valid location first.");
@@ -183,7 +166,6 @@
             .then(data => {
                 alert(data.message);
                 hideLoading();
-                // Refresh gas stations list to recalc distance
                 loadStations();
             })
             .catch(err => {
@@ -192,7 +174,6 @@
             });
     });
 
-    // --- Load Gas Stations and Render as Cards ---
     function loadStations() {
         showLoading();
         fetch('/api/admin/gas-stations')
@@ -214,16 +195,13 @@
                         stationId = '-';
                         stationName = station.name;
                     }
-                    // Convert fuelAvailable boolean to Yes/No
                     let availability = (typeof station.fuelAvailable === "boolean")
                         ? (station.fuelAvailable ? "Yes" : "No")
                         : "-";
                     const traffic = station.trafficLevel ? station.trafficLevel : "-";
 
-                    // Create card element
                     const card = document.createElement('div');
                     card.className = 'station-card';
-                    // Create a container to display the calculated distance
                     const distanceContainer = document.createElement('div');
                     distanceContainer.className = 'distance-container';
                     distanceContainer.id = 'distance-' + stationId;
@@ -239,7 +217,6 @@
               <p><strong>Availability:</strong> ${availability}</p>
               <p><strong>Traffic:</strong> ${traffic}</p>
             `;
-                    // Create Calculate Distance button
                     const distanceBtn = document.createElement('button');
                     distanceBtn.className = 'button distance-btn';
                     distanceBtn.innerHTML = '<i class="fa fa-road"></i> Calculate Distance';
@@ -259,7 +236,6 @@
     }
     loadStations();
 
-    // --- Calculate Distance for a Station ---
     function calculateDistance(userId, stationId) {
         showLoading();
         fetch(`/api/admin/gas-stations/distance/${userId}/${stationId}`)
@@ -275,7 +251,6 @@
             });
     }
 
-    // --- Delete Station ---
     function deleteStation(id) {
         if (confirm("Are you sure you want to delete station: " + id + "?")) {
             showLoading();
@@ -293,7 +268,6 @@
         }
     }
 
-    // --- Update Traffic via Prompt from Card ---
     function updateTrafficPrompt(id) {
         const newTraffic = prompt("Enter new traffic level (Low, Medium, High, Undefined):");
         if (newTraffic) {
@@ -316,7 +290,6 @@
         }
     }
 
-    // --- Update Station Form Submission (Tab Update) ---
     document.getElementById('updateStationForm').addEventListener('submit', function(e) {
         e.preventDefault();
         const id = document.getElementById('updateStationId').value;
@@ -341,7 +314,6 @@
                 alert("Gas Station updated successfully!");
                 hideLoading();
                 loadStations();
-                // Reset update form fields
                 document.getElementById('updateStationId').value = '';
                 document.getElementById('updateStationName').value = '';
                 document.getElementById('updateLocation').value = '';
@@ -358,7 +330,6 @@
             });
     });
 
-    // --- Delete Station Form Submission (Tab Delete) ---
     document.getElementById('deleteStationForm').addEventListener('submit', function(e) {
         e.preventDefault();
         const id = document.getElementById('deleteStationId').value;

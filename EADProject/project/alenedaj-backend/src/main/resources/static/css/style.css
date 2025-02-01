@@ -29,7 +29,7 @@ body {
 
 header h1 {
     font-size: 2rem;
-    color: #3498db;
+    color: rgb(82, 115, 254);
     margin-bottom: 20px;
 }
 
@@ -68,7 +68,7 @@ input[type="password"] {
 }
 
 .button {
-    background: #3498db;
+    background: rgb(82, 115, 254);
     width: 150px;
     margin: auto;
     color: #fff;
@@ -82,7 +82,7 @@ input[type="password"] {
     justify-content: center;
 }
 .button:hover {
-    background: #2980b9;
+    background: rgba(82, 115, 253, 0.76);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 .button:disabled {
