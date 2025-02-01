@@ -1,0 +1,153 @@
+* {
+    color: white;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    background: url('../images/login.jpg') no-repeat center center fixed;
+    background-size: cover;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    font-family: Arial, sans-serif;
+}
+
+#sendVerificationBtn{
+    background: none;
+    text-align: end;
+    font-weight: normal;
+    font-size: 15px;
+    color: #56a8ff;
+    margin-bottom: 20px;
+    padding: 0;
+}
+
+#sendVerificationBtn:hover {
+    color: #0056b3;
+}
+
+.logo_container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    max-width: 100%;
+    padding: 10px;
+    margin: 20px auto;
+    overflow: hidden;
+}
+
+.logo_container img {
+    max-width: 80%;
+    height: auto;
+    max-height: 80px;
+    object-fit: contain;
+}
+
+body::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(100, 100, 100, 0.2);
+    z-index: -1;
+}
+
+.container {
+    background: rgba(37, 43, 55, 0.8); /* 60% transparency */
+    backdrop-filter: blur(2px);
+    padding: 35px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    width: 450px;
+    margin-right: 5%;
+}
+
+#loginTitle {
+    text-align: start;
+}
+
+h1 {
+    text-align: center;
+    color: white;
+}
+
+.inputs {
+    margin: 5px 0;
+}
+
+.form-section {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+input {
+    width: 100%;
+    padding: 8px;
+    margin-top: 5px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    color: black;
+}
+
+#registerTitle{
+    text-align: start;
+}
+button {
+    width: 100%;
+    padding: 10px;
+    background: #007BFF;
+    color: white;
+    font-weight: bold;
+    border: none;
+    font-size: 18px;
+    margin: 5px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #0056b3;
+}
+
+.register {
+    color: #56a8ff;
+}
+
+.register:hover {
+    color: #0056b3;
+}
+
+.spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid white;
+    border-top: 2px solid transparent;
+    border-radius: 50%;
+    display: inline-block;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@media (max-width: 768px) {
+    body {
+        justify-content: center;
+    }
+
+    .container {
+        margin-right: 0;
+    }
+}

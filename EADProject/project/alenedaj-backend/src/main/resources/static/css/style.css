@@ -1,6 +1,8 @@
 /* Global Styles */
+@import url('https://fonts.googleapis.com/css2?family=Raleway:ital,wght@0,100..900;1,100..900&display=swap');
 * {
     box-sizing: border-box;
+    font-family: "Raleway", serif;
 }
 body {
     margin: 0;
@@ -13,7 +15,6 @@ body {
     min-height: 100vh;
 }
 
-/* Container */
 .container {
     background: #fff;
     border-radius: 8px;
@@ -26,24 +27,21 @@ body {
     align-items: center;
 }
 
-/* Header */
 header h1 {
     font-size: 2rem;
     color: #3498db;
     margin-bottom: 20px;
 }
 
-/* Form Section */
 .form-section {
     width: 100%;
 }
 .form-section h2 {
     text-align: center;
     margin-bottom: 15px;
-    color: #333;
+    color: white;
 }
 
-/* Form Styles */
 form {
     display: flex;
     flex-direction: column;
@@ -51,7 +49,7 @@ form {
 }
 label {
     font-weight: bold;
-    margin-bottom: 5px;
+    /*margin-bottom: 5px;*/
 }
 input[type="text"],
 input[type="email"],
@@ -62,7 +60,6 @@ input[type="password"] {
     width: 100%;
 }
 
-/* Verification Section */
 .verification-section {
     display: flex;
     align-items: center;
@@ -70,9 +67,10 @@ input[type="password"] {
     justify-content: center;
 }
 
-/* Button Styles */
 .button {
     background: #3498db;
+    width: 150px;
+    margin: auto;
     color: #fff;
     border: none;
     padding: 12px;
@@ -92,7 +90,6 @@ input[type="password"] {
     cursor: not-allowed;
 }
 
-/* Spinner Styles */
 .spinner {
     border: 4px solid #f3f3f3;
     border-top: 4px solid #fff;

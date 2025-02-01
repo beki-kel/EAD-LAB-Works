@@ -2,41 +2,43 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Login - ale nedaj</title>
+    <title>Login - aleNedaj</title>
     <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/login.css}">
 </head>
 <body>
 <div class="container">
     <header>
-        <h1>ale nedaj</h1>
+        <div class="logo_container">
+        <img src="/images/logo-2.png" alt="">
+            <img src="/images/logo_text2.png" alt="">
+        </div>
     </header>
     <section class="form-section">
-        <h2>Login</h2>
-        <form id="loginForm">
-            <!-- Email Input -->
+        <h2 id="loginTitle">Sign in</h2>
+        <form class="loginForm">
+            <div class="inputs">
             <label for="email">Email:</label>
             <input type="email" id="email" name="email" required />
-
-            <!-- Password Input -->
+            </div>
+            <div class="inputs">
             <label for="password">Password:</label>
             <input type="password" id="password" name="password" required />
-
-            <!-- Login Button with Spinner -->
+            </div>
             <button type="submit" class="button" id="loginBtn">
                 <span id="btnText">Login</span>
                 <span id="spinner" class="spinner" style="display:none;"></span>
             </button>
         </form>
         <p style="text-align: center; margin-top: 15px;">
-            Don't have an account? <a href="/auth/register">Register here</a>.
+            Don't have an account? <a href="/auth/register" class="register">Register here</a>.
         </p>
     </section>
 </div>
 
-<!-- JavaScript for Login Page -->
 <script>
     document.getElementById('loginForm').addEventListener('submit', function (event) {
-        event.preventDefault(); // Prevent default form submission
+        event.preventDefault();
 
         const loginBtn = document.getElementById('loginBtn');
         const btnText = document.getElementById('btnText');
@@ -46,7 +48,6 @@
         btnText.style.display = 'none';
         spinner.style.display = 'inline-block';
 
-        // Convert email to lower-case before sending
         const formData = {
             email: document.getElementById('email').value.toLowerCase(),
             password: document.getElementById('password').value
@@ -62,7 +63,6 @@
                 if (status >= 400) {
                     alert("Login error: " + body.error);
                 } else if (body.role) {
-                    alert(body.message);
                     if (body.role.toLowerCase() === 'admin') {
                         window.location.href = '/admin/dashboard';
                     } else {

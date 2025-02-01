@@ -4,36 +4,38 @@
     <meta charset="UTF-8">
     <title>Register - ale nedaj</title>
     <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/login.css}">
 </head>
 <body>
 <div class="container">
     <header>
-        <h1>ale nedaj</h1>
+        <div class="logo_container">
+            <img src="/images/logo-2.png" alt="">
+            <img src="/images/logo_text2.png" alt="">
+        </div>
     </header>
     <section class="form-section">
-        <h2>Register</h2>
-        <form id="registerForm">
-            <!-- Name -->
+        <h2 id="registerTitle">Register</h2>
+        <form class="registerForm">
+            <div class="inputs">
             <label for="name">Name:</label>
             <input type="text" id="name" name="name" required />
-
-            <!-- Email -->
+            </div>
+            <div class="inputs">
             <label for="email">Email:</label>
             <input type="email" id="email" name="email" required />
-
-            <!-- Password -->
+            </div>
+            <div class="inputs">
             <label for="password">Password:</label>
             <input type="password" id="password" name="password" required />
-
-            <!-- Verification Code Input (hidden until send is clicked) -->
+            </div>
             <div id="verificationCodeDiv" style="display: none;">
                 <label for="verificationCode">Verification Code:</label>
                 <input type="text" id="verificationCode" name="verificationCode" placeholder="Enter code" />
             </div>
 
-            <!-- Verification Section -->
             <div class="verification-section">
-                <button type="button" id="sendVerificationBtn" class="button">
+                <button type="button" id="sendVerificationBtn">
                     Send Verification
                 </button>
                 <span id="spinner" class="spinner" style="display:none;"></span>
@@ -42,23 +44,20 @@
 
 
 
-            <!-- Submit Registration -->
             <button type="submit" class="button">Register</button>
         </form>
         <p style="text-align: center; margin-top: 15px;">
-            Already have an account? <a href="/auth/login">Login here</a>.
+            Already have an account? <a href="/auth/login" class="register">Login here</a>.
         </p>
     </section>
 </div>
 
-<!-- JavaScript for Registration Page -->
 <script>
     const sendBtn = document.getElementById('sendVerificationBtn');
     const countdownSpan = document.getElementById('countdown');
     const verificationDiv = document.getElementById('verificationCodeDiv');
 
     sendBtn.addEventListener('click', function () {
-        // Convert the email to lower case before sending
         const email = document.getElementById('email').value.toLowerCase();
         if (!email) {
             alert('Please enter your email first.');
@@ -108,11 +107,10 @@
     }
 
     document.getElementById('registerForm').addEventListener('submit', function (e) {
-        e.preventDefault(); // Prevent default form submission
+        e.preventDefault();
 
         const formData = {
             name: document.getElementById('name').value,
-            // Convert email to lower-case before sending
             email: document.getElementById('email').value.toLowerCase(),
             password: document.getElementById('password').value,
             verificationCode: document.getElementById('verificationCode').value
