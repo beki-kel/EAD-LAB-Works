@@ -19,33 +19,38 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                // Disable CSRF since we're using JWTs and a stateless session
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(authorize -> authorize
-                        // Permit access to login, registration, and static assets
                         .requestMatchers("/login", "/register", "/css/**", "/js/**", "/images/**").permitAll()
-                        // Permit access to all API endpoints for authentication (signup, login, etc.)
-                        .requestMatchers("/api/auth/**").permitAll()
-                        // Restrict admin API endpoints to ADMIN authority
-                        .requestMatchers("/api/admin/**").hasAuthority("ADMIN")
-                        // Any other request must be authenticated
+                        .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers("/api/admin/**", "/dashboard/admin/**").hasAuthority("ADMIN")
+                        .requestMatchers("/dashboard/user/**").hasAuthority("USER")
                         .anyRequest().authenticated()
                 )
-                // Configure form login with a custom login page and default success URL
+                // ✅ Custom login success handler to redirect users correctly
                 .formLogin(form -> form
-                        .loginPage("/login")
-                        .defaultSuccessUrl("/dashboard", true)
+                        .loginPage("/auth/login")
+                        .successHandler((request, response, authentication) -> {
+                            authentication.getAuthorities().forEach(grantedAuthority -> {
+                                try {
+                                    if (grantedAuthority.getAuthority().equals("ADMIN")) {
+                                        response.sendRedirect("/dashboard/admin"); // Redirect admin users
+                                    } else {
+                                        response.sendRedirect("/dashboard/user"); // Redirect normal users
+                                    }
+                                } catch (Exception e) {
+                                    throw new RuntimeException(e);
+                                }
+                            });
+                        })
                         .permitAll()
                 )
-                // Configure logout and specify the URL to redirect after logout
                 .logout(logout -> logout
                         .logoutUrl("/logout")
-                        .logoutSuccessUrl("/login")
+                        .logoutSuccessUrl("/login?logout")
                         .permitAll()
                 )
-                // Set session management as stateless
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                // Add JWT filter before the default username/password authentication filter
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

@@ -1,43 +1,145 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>Register</title>
+    <meta charset="UTF-8">
+    <title>Register - ale nedaj</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
-<body th:replace="layout :: base(~{::body})">
-<div>
-    <h2>Register</h2>
-    <form th:action="@{/api/auth/register}" method="post" id="registerForm">
-        <div>
-            <label for="email">Email:</label>
-            <input type="email" name="email" id="email" required />
-        </div>
-        <div>
-            <label for="password">Password:</label>
-            <input type="password" name="password" id="password" required />
-        </div>
-        <button type="submit">Register</button>
-    </form>
-    <div id="registerMessage"></div>
+<body>
+<div class="container">
+    <header>
+        <h1>ale nedaj</h1>
+    </header>
+    <section class="form-section">
+        <h2>Register</h2>
+        <form id="registerForm">
+            <!-- Name -->
+            <label for="name">Name:</label>
+            <input type="text" id="name" name="name" required />
 
-    <script>
-        document.getElementById("registerForm").addEventListener("submit", function(e){
-            e.preventDefault();
-            const email = document.getElementById("email").value;
-            const password = document.getElementById("password").value;
-            fetch(this.action, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email, password })
-            })
-                .then(response => response.json())
-                .then(data => {
-                    document.getElementById("registerMessage").innerText = data.message;
-                })
-                .catch(error => {
-                    document.getElementById("registerMessage").innerText = "An error occurred";
-                });
-        });
-    </script>
+            <!-- Email -->
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" required />
+
+            <!-- Password -->
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" required />
+
+            <!-- Verification Code Input (hidden until send is clicked) -->
+            <div id="verificationCodeDiv" style="display: none;">
+                <label for="verificationCode">Verification Code:</label>
+                <input type="text" id="verificationCode" name="verificationCode" placeholder="Enter code" />
+            </div>
+
+            <!-- Verification Section -->
+            <div class="verification-section">
+                <button type="button" id="sendVerificationBtn" class="button">
+                    Send Verification
+                </button>
+                <span id="spinner" class="spinner" style="display:none;"></span>
+                <span id="countdown"></span>
+            </div>
+
+
+
+            <!-- Submit Registration -->
+            <button type="submit" class="button">Register</button>
+        </form>
+        <p style="text-align: center; margin-top: 15px;">
+            Already have an account? <a href="/auth/login">Login here</a>.
+        </p>
+    </section>
 </div>
+
+<!-- JavaScript for Registration Page -->
+<script>
+    const sendBtn = document.getElementById('sendVerificationBtn');
+    const countdownSpan = document.getElementById('countdown');
+    const verificationDiv = document.getElementById('verificationCodeDiv');
+
+    sendBtn.addEventListener('click', function () {
+        // Convert the email to lower case before sending
+        const email = document.getElementById('email').value.toLowerCase();
+        if (!email) {
+            alert('Please enter your email first.');
+            return;
+        }
+        sendBtn.disabled = true;
+        spinner.style.display = 'inline-block';
+        verificationDiv.style.display = 'block';
+
+        fetch('/auth/api/send-verification?email=' + encodeURIComponent(email), {
+            method: 'POST'
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert(data.error);
+                    if (data.error.includes("already exists")) {
+                        window.location.href = '/auth/login';
+                    }
+                    sendBtn.disabled = false;
+                    spinner.style.display = 'none';
+                } else {
+                    alert(data.message);
+                    spinner.style.display = 'none';
+                    startCountdown(300);
+                }
+            })
+            .catch(error => {
+                console.error('Error sending verification:', error);
+                sendBtn.disabled = false;
+                spinner.style.display = 'none';
+            });
+    });
+
+    function startCountdown(seconds) {
+        let counter = seconds;
+        countdownSpan.textContent = ` (Resend in ${counter}s)`;
+        const interval = setInterval(() => {
+            counter--;
+            countdownSpan.textContent = ` (Resend in ${counter}s)`;
+            if (counter <= 0) {
+                clearInterval(interval);
+                countdownSpan.textContent = '';
+                sendBtn.disabled = false;
+            }
+        }, 1000);
+    }
+
+    document.getElementById('registerForm').addEventListener('submit', function (e) {
+        e.preventDefault(); // Prevent default form submission
+
+        const formData = {
+            name: document.getElementById('name').value,
+            // Convert email to lower-case before sending
+            email: document.getElementById('email').value.toLowerCase(),
+            password: document.getElementById('password').value,
+            verificationCode: document.getElementById('verificationCode').value
+        };
+
+        fetch('/auth/api/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(formData)
+        })
+            .then(response => response.json().then(data => ({ status: response.status, body: data })))
+            .then(({ status, body }) => {
+                if (status >= 400) {
+                    alert("Registration error: " + body.error);
+                    if (body.error.includes("already exists")) {
+                        window.location.href = '/auth/login';
+                    }
+                } else {
+                    alert(body.message);
+                    window.location.href = '/auth/login';
+                }
+            })
+            .catch(error => {
+                console.error('Registration error:', error);
+                alert('Registration error: ' + error.message);
+            });
+    });
+</script>
 </body>
 </html>

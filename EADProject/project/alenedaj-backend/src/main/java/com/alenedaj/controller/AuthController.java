@@ -11,80 +11,117 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;  // Using @Controller for view resolution
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
-@RestController
-@RequestMapping("/api/auth")
+@Controller
+@RequestMapping("/auth")
 public class AuthController {
 
     private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
-
     private final AuthService authService;
 
     public AuthController(AuthService authService) {
         this.authService = authService;
     }
 
+    // Display registration page
+    @GetMapping("/register")
+    public String registerPage(Model model) {
+        return "register";  // resolves to register.html
+    }
+
+    // Display login page
+    @GetMapping("/login")
+    public String loginPage(Model model) {
+        return "login";  // resolves to login.html
+    }
+
+    /* ============================
+       API Endpoints (JSON/REST)
+       ============================ */
+
     // Send email verification code
-    @PostMapping("/send-verification")
-    public ResponseEntity<String> sendVerification(@RequestParam String email) throws MessagingException {
-        logger.info("Sending verification to {}", email);
-        authService.sendVerificationCode(email);
-        return ResponseEntity.ok("Verification code sent to " + email);
+    @PostMapping("/api/send-verification")
+    public ResponseEntity<Map<String, String>> sendVerification(@RequestParam String email) throws MessagingException {
+        try {
+            logger.info("Sending verification to {}", email);
+            authService.sendVerificationCode(email);
+            return ResponseEntity.ok(Map.of("message", "Verification code sent to " + email));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
     }
 
     // Register a new user
-    @PostMapping("/register")
+    @PostMapping("/api/register")
     public ResponseEntity<Map<String, String>> register(@Valid @RequestBody UserDTO userDTO) {
-        logger.info("Registering user with email {}", userDTO.getEmail());
-        String token = authService.register(userDTO);
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(Map.of("message", "User registered successfully", "token", token));
+        try {
+            logger.info("Registering user with email {}", userDTO.getEmail());
+            String token = authService.register(userDTO);
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(Map.of("message", "User registered successfully", "token", token));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
     }
 
     // Login user (Store JWT in cookie & return role)
-    @PostMapping("/login")
+    @PostMapping("/api/login")
     public ResponseEntity<Map<String, String>> login(@Valid @RequestBody LoginDTO loginDTO, HttpServletResponse response) {
-        logger.info("User {} attempting login", loginDTO.getEmail());
-        String token = authService.login(loginDTO);
-        String role = authService.getUserRole(loginDTO.getEmail());
+        try {
+            logger.info("User {} attempting login", loginDTO.getEmail());
+            String token = authService.login(loginDTO);
+            String role = authService.getUserRole(loginDTO.getEmail());
 
-        // Store token in HTTP-only cookie
-        Cookie jwtCookie = new Cookie("jwt", token);
-        jwtCookie.setHttpOnly(true);
-        jwtCookie.setPath("/");
-        jwtCookie.setMaxAge(24 * 60 * 60);
-        response.addCookie(jwtCookie);
+            // Store token in HTTP-only cookie
+            Cookie jwtCookie = new Cookie("jwt", token);
+            jwtCookie.setHttpOnly(true);
+            jwtCookie.setPath("/");
+            jwtCookie.setMaxAge(24 * 60 * 60);
+            response.addCookie(jwtCookie);
 
-        return ResponseEntity.ok(Map.of("message", "Login successful", "role", role));
+            return ResponseEntity.ok(Map.of("message", "Login successful", "role", role));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
     }
 
     // Logout (Clear JWT Cookie)
-    @PostMapping("/logout")
-    public ResponseEntity<String> logout(HttpServletResponse response) {
+    @PostMapping("/api/logout")
+    public ResponseEntity<Map<String, String>> logout(HttpServletResponse response) {
         Cookie jwtCookie = new Cookie("jwt", "");
         jwtCookie.setHttpOnly(true);
         jwtCookie.setPath("/");
         jwtCookie.setMaxAge(0); // Expire immediately
         response.addCookie(jwtCookie);
         logger.info("User logged out successfully");
-        return ResponseEntity.ok("Logout successful");
+        return ResponseEntity.ok(Map.of("message", "Logout successful"));
     }
 
     // Update User Location (Auto-Fill Coordinates)
-    @PutMapping("/update-location/{userId}")
-    public ResponseEntity<String> updateUserLocation(@PathVariable String userId, @RequestBody String location) {
-        logger.info("Updating location for userId {}: {}", userId, location);
-        authService.updateUserLocation(userId, location);
-        return ResponseEntity.ok("User location updated successfully.");
+    @PutMapping("/api/update-location/{userId}")
+    public ResponseEntity<Map<String, String>> updateUserLocation(@PathVariable String userId, @RequestBody String location) {
+        try {
+            logger.info("Updating location for userId {}: {}", userId, location);
+            authService.updateUserLocation(userId, location);
+            return ResponseEntity.ok(Map.of("message", "User location updated successfully."));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
     }
 
     // Get User Info (Email & Role)
-    @GetMapping("/user-info")
+    @GetMapping("/api/user-info")
     public ResponseEntity<Map<String, String>> getUserInfo(@RequestParam String email) {
-        String role = authService.getUserRole(email);
-        return ResponseEntity.ok(Map.of("email", email, "role", role));
+        try {
+            String role = authService.getUserRole(email);
+            return ResponseEntity.ok(Map.of("email", email, "role", role));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
     }
 }

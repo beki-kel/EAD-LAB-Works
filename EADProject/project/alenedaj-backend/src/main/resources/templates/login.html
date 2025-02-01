@@ -1,47 +1,87 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>Login</title>
+    <meta charset="UTF-8">
+    <title>Login - ale nedaj</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
-<!-- Pass the entire body content via the complete fragment expression syntax -->
-<body th:replace="~{layout :: base(~{::body})}">
-<div>
-    <h2>Login</h2>
-    <form th:action="@{/api/auth/login}" method="post" id="loginForm">
-        <div>
+<body>
+<div class="container">
+    <header>
+        <h1>ale nedaj</h1>
+    </header>
+    <section class="form-section">
+        <h2>Login</h2>
+        <form id="loginForm">
+            <!-- Email Input -->
             <label for="email">Email:</label>
-            <input type="email" name="email" id="email" required />
-        </div>
-        <div>
+            <input type="email" id="email" name="email" required />
+
+            <!-- Password Input -->
             <label for="password">Password:</label>
-            <input type="password" name="password" id="password" required />
-        </div>
-        <button type="submit">Login</button>
-    </form>
-    <div id="loginMessage"></div>
-    <script>
-        // Example using the Fetch API for login form submission
-        document.getElementById("loginForm").addEventListener("submit", function (e) {
-            e.preventDefault();
-            const email = document.getElementById("email").value;
-            const password = document.getElementById("password").value;
-            fetch(this.action, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email, password })
-            })
-                .then(response => response.json())
-                .then(data => {
-                    document.getElementById("loginMessage").innerText = data.message;
-                    if (data.message === "Login successful") {
-                        window.location.href = "/dashboard";
-                    }
-                })
-                .catch(error => {
-                    document.getElementById("loginMessage").innerText = "An error occurred";
-                });
-        });
-    </script>
+            <input type="password" id="password" name="password" required />
+
+            <!-- Login Button with Spinner -->
+            <button type="submit" class="button" id="loginBtn">
+                <span id="btnText">Login</span>
+                <span id="spinner" class="spinner" style="display:none;"></span>
+            </button>
+        </form>
+        <p style="text-align: center; margin-top: 15px;">
+            Don't have an account? <a href="/auth/register">Register here</a>.
+        </p>
+    </section>
 </div>
+
+<!-- JavaScript for Login Page -->
+<script>
+    document.getElementById('loginForm').addEventListener('submit', function (event) {
+        event.preventDefault(); // Prevent default form submission
+
+        const loginBtn = document.getElementById('loginBtn');
+        const btnText = document.getElementById('btnText');
+        const spinner = document.getElementById('spinner');
+
+        loginBtn.disabled = true;
+        btnText.style.display = 'none';
+        spinner.style.display = 'inline-block';
+
+        // Convert email to lower-case before sending
+        const formData = {
+            email: document.getElementById('email').value.toLowerCase(),
+            password: document.getElementById('password').value
+        };
+
+        fetch('/auth/api/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(formData)
+        })
+            .then(response => response.json().then(data => ({ status: response.status, body: data })))
+            .then(({ status, body }) => {
+                if (status >= 400) {
+                    alert("Login error: " + body.error);
+                } else if (body.role) {
+                    alert(body.message);
+                    if (body.role.toLowerCase() === 'admin') {
+                        window.location.href = '/admin/dashboard';
+                    } else {
+                        window.location.href = '/user/dashboard';
+                    }
+                } else {
+                    throw new Error('Role not found in response.');
+                }
+            })
+            .catch(error => {
+                console.error('Login error:', error);
+                alert('Login error: ' + error.message);
+            })
+            .finally(() => {
+                loginBtn.disabled = false;
+                btnText.style.display = 'inline';
+                spinner.style.display = 'none';
+            });
+    });
+</script>
 </body>
 </html>

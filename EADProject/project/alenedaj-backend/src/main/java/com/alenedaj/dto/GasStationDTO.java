@@ -4,10 +4,13 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
+import org.bson.types.ObjectId;
 
 @Getter
 @Setter
 public class GasStationDTO {
+
+    private ObjectId _id;
     @NotBlank(message = "Name is required")
     private String name;
 
@@ -69,4 +72,11 @@ public class GasStationDTO {
         this.trafficLevel = trafficLevel;
     }// LOW, MEDIUM, HIGH
 
+    public ObjectId getId() {
+        return _id;
+    }
+
+    public void setId(ObjectId _id) {
+        this._id = _id;
+    }
 }

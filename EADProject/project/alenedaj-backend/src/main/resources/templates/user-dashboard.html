@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>User Dashboard - ale nedaj</title>
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+<div class="dashboard-container">
+    <nav class="sidebar">
+        <div class="logo">
+            <h2>ale nedaj</h2>
+        </div>
+        <ul class="nav-list">
+            <li class="active" data-tab="tab-list"><i class="fa fa-list"></i> Stations</li>
+            <li data-tab="tab-distance"><i class="fa fa-road"></i> Get Distance</li>
+            <li data-tab="tab-directions"><i class="fa fa-map"></i> Get Directions</li>
+            <li data-tab="tab-traffic"><i class="fa fa-tachometer-alt"></i> Update Traffic</li>
+        </ul>
+    </nav>
+    <div class="main-content">
+        <header>
+            <h1>User Dashboard</h1>
+        </header>
+        <div class="tabs">
+            <!-- Tab: List Gas Stations -->
+            <div class="tab-content active" id="tab-list">
+                <h2>Gas Stations</h2>
+                <table id="stationsTable">
+                    <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Location</th>
+                        <th>Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <!-- Populated via AJAX -->
+                    </tbody>
+                </table>
+            </div>
+            <!-- Tab: Get Distance -->
+            <div class="tab-content" id="tab-distance">
+                <h2>Get Distance to Station</h2>
+                <form id="distanceForm">
+                    <label for="userId">Your User ID:</label>
+                    <input type="text" id="userId" name="userId" required>
+                    <label for="stationId">Station ID:</label>
+                    <input type="text" id="stationId" name="stationId" required>
+                    <button type="submit" class="button"><i class="fa fa-road"></i> Get Distance</button>
+                </form>
+                <p id="distanceResult"></p>
+            </div>
+            <!-- Tab: Get Directions -->
+            <div class="tab-content" id="tab-directions">
+                <h2>Get Driving Directions</h2>
+                <form id="directionsForm">
+                    <label for="stationIdDir">Station ID:</label>
+                    <input type="text" id="stationIdDir" name="stationId" required>
+                    <label for="userLat">Your Latitude:</label>
+                    <input type="number" step="any" id="userLat" name="userLat" required>
+                    <label for="userLon">Your Longitude:</label>
+                    <input type="number" step="any" id="userLon" name="userLon" required>
+                    <button type="submit" class="button"><i class="fa fa-map"></i> Get Directions</button>
+                </form>
+                <p id="directionsResult"></p>
+            </div>
+            <!-- Tab: Update Traffic -->
+            <div class="tab-content" id="tab-traffic">
+                <h2>Update Traffic Level</h2>
+                <form id="trafficForm">
+                    <label for="stationIdTraffic">Station ID:</label>
+                    <input type="text" id="stationIdTraffic" name="stationId" required>
+                    <label for="trafficLevel">Traffic Level:</label>
+                    <input type="text" id="trafficLevel" name="trafficLevel" required>
+                    <button type="submit" class="button"><i class="fa fa-tachometer-alt"></i> Update Traffic</button>
+                </form>
+                <p id="trafficResult"></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Tab switching logic for user dashboard
+    const navItems = document.querySelectorAll('.nav-list li');
+    const tabContents = document.querySelectorAll('.tab-content');
+    navItems.forEach(item => {
+        item.addEventListener('click', () => {
+            navItems.forEach(i => i.classList.remove('active'));
+            item.classList.add('active');
+            const tabId = item.getAttribute('data-tab');
+            tabContents.forEach(tab => {
+                tab.classList.remove('active');
+                if(tab.id === tabId){
+                    tab.classList.add('active');
+                }
+            });
+        });
+    });
+
+    // Load gas stations into table
+    function loadStations(){
+        fetch('/api/admin/gas-stations')
+            .then(res => res.json())
+            .then(data => {
+                const tbody = document.getElementById('stationsTable').querySelector('tbody');
+                tbody.innerHTML = '';
+                data.forEach(station => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${station.name}</td>
+                        <td>${station.location}</td>
+                        <td>
+                            <button class="action-btn" onclick="alert('For more details, use the other tabs')"><i class="fa fa-info-circle"></i></button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            })
+            .catch(err => console.error('Error loading stations:', err));
+    }
+    loadStations();
+
+    // Get Distance form submission
+    document.getElementById('distanceForm').addEventListener('submit', function(e){
+        e.preventDefault();
+        const userId = document.getElementById('userId').value;
+        const stationId = document.getElementById('stationId').value;
+        fetch(`/api/admin/gas-stations/distance/${userId}/${stationId}`)
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('distanceResult').textContent = `Distance: ${data} km`;
+            })
+            .catch(err => alert('Error fetching distance: ' + err));
+    });
+
+    // Get Directions form submission
+    document.getElementById('directionsForm').addEventListener('submit', function(e){
+        e.preventDefault();
+        const stationId = document.getElementById('stationIdDir').value;
+        const userLat = document.getElementById('userLat').value;
+        const userLon = document.getElementById('userLon').value;
+        fetch(`/api/admin/gas-stations/directions/${stationId}?userLat=${userLat}&userLon=${userLon}`)
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('directionsResult').textContent = `Directions: ${data}`;
+            })
+            .catch(err => alert('Error fetching directions: ' + err));
+    });
+
+    // Update Traffic form submission
+    document.getElementById('trafficForm').addEventListener('submit', function(e){
+        e.preventDefault();
+        const stationId = document.getElementById('stationIdTraffic').value;
+        const trafficLevel = document.getElementById('trafficLevel').value;
+        fetch(`/api/admin/gas-stations/update-traffic/${stationId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(trafficLevel)
+        })
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('trafficResult').textContent = 'Traffic updated successfully!';
+                loadStations();
+            })
+            .catch(err => alert('Error updating traffic: ' + err));
+    });
+</script>
+</body>
+</html>

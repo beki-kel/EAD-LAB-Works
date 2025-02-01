@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Dashboard - ale nedaj</title>
+    <!-- Dashboard and Common CSS -->
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Global loading indicator */
+        #globalLoading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background: #2980b9;
+            color: #fff;
+            text-align: center;
+            padding: 5px;
+            display: none;
+            z-index: 1000;
+        }
+        /* Location search styling */
+        .location-search-container {
+            margin: 10px 0;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .location-search-container input[type="text"] {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #bdc3c7;
+            border-radius: 5px;
+        }
+        .location-display {
+            margin-top: 5px;
+            font-style: italic;
+            color: #555;
+        }
+        /* Inline styling for card actions */
+        .card-actions {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+        .card-actions button {
+            display: inline-block;
+            margin-left: 5px;
+        }
+        /* Decorated Station Card */
+        .station-card {
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            padding: 15px;
+            margin-bottom: 15px;
+            position: relative;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .station-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+        }
+        .station-card h3 {
+            margin-top: 0;
+        }
+    </style>
+</head>
+<body>
+<!-- Global loading indicator -->
+<div id="globalLoading">Loading...</div>
+
+<div class="dashboard-container">
+    <nav class="sidebar">
+        <div class="logo">
+            <h2>ale nedaj</h2>
+        </div>
+        <ul class="nav-list">
+            <li class="active" data-tab="tab-add"><i class="fa fa-plus"></i> Add Station</li>
+            <li data-tab="tab-list"><i class="fa fa-list"></i> List Stations</li>
+            <li data-tab="tab-update"><i class="fa fa-edit"></i> Update Station</li>
+            <li data-tab="tab-delete"><i class="fa fa-trash"></i> Delete Station</li>
+        </ul>
+    </nav>
+    <div class="main-content">
+        <header>
+            <h1>Admin Dashboard</h1>
+        </header>
+        <div class="tabs">
+            <!-- Tab: Add Gas Station -->
+            <div class="tab-content active" id="tab-add">
+                <h2>Add Gas Station</h2>
+                <form id="addStationForm">
+                    <label for="stationName">Station Name:</label>
+                    <input type="text" id="stationName" name="stationName" required>
+
+                    <!-- Location Search Input -->
+                    <label for="locationSearch">Location:</label>
+                    <div id="locationSearchContainer" class="location-search-container">
+                        <input type="text" id="locationSearch" placeholder="Enter location (e.g., Addis Ababa, Ethiopia)">
+                        <button type="button" id="locateBtn" class="button"><i class="fa fa-search"></i> Locate</button>
+                    </div>
+                    <!-- Display the formatted location -->
+                    <div id="locationDisplay" class="location-display"></div>
+                    <!-- Hidden fields for coordinates and formatted location -->
+                    <input type="hidden" id="latitude" name="latitude">
+                    <input type="hidden" id="longitude" name="longitude">
+                    <input type="hidden" id="location" name="location">
+
+                    <label for="availability">Availability:</label>
+                    <select id="availability" name="availability" required>
+                        <option value="">-- Select Availability --</option>
+                        <option value="Yes">Yes</option>
+                        <option value="No">No</option>
+                    </select>
+
+                    <label for="traffic">Traffic:</label>
+                    <select id="traffic" name="traffic" required>
+                        <option value="">-- Select Traffic Level --</option>
+                        <option value="Low">Low</option>
+                        <option value="Medium">Medium</option>
+                        <option value="High">High</option>
+                        <option value="Undefined">Undefined</option>
+                    </select>
+
+                    <button type="submit" class="button"><i class="fa fa-plus"></i> Add Station</button>
+                </form>
+            </div>
+
+            <!-- Tab: List Gas Stations -->
+            <div class="tab-content" id="tab-list">
+                <h2>Gas Stations</h2>
+                <div id="stationsContainer">
+                    <!-- Station cards will be dynamically populated here -->
+                </div>
+            </div>
+
+            <!-- Tab: Update Gas Station -->
+            <div class="tab-content" id="tab-update">
+                <h2>Update Gas Station</h2>
+                <form id="updateStationForm">
+                    <label for="updateStationId">Station ID:</label>
+                    <input type="text" id="updateStationId" name="stationId" required>
+                    <label for="updateStationName">New Station Name:</label>
+                    <input type="text" id="updateStationName" name="stationName">
+
+                    <!-- Location Search for Update -->
+                    <label for="updateLocationSearch">New Location:</label>
+                    <div id="updateLocationSearchContainer" class="location-search-container">
+                        <input type="text" id="updateLocationSearch" placeholder="Enter new location">
+                        <button type="button" id="updateLocateBtn" class="button"><i class="fa fa-search"></i> Locate</button>
+                    </div>
+                    <!-- Display found location for update -->
+                    <div id="updateLocationDisplay" class="location-display"></div>
+                    <!-- Hidden fields for update location -->
+                    <input type="hidden" id="updateLatitude" name="updateLatitude">
+                    <input type="hidden" id="updateLongitude" name="updateLongitude">
+                    <input type="hidden" id="updateLocation" name="location">
+
+                    <label for="updateAvailability">New Availability:</label>
+                    <select id="updateAvailability" name="availability">
+                        <option value="">-- Select Availability --</option>
+                        <option value="Yes">Yes</option>
+                        <option value="No">No</option>
+                    </select>
+                    <label for="updateTraffic">New Traffic Level:</label>
+                    <select id="updateTraffic" name="traffic">
+                        <option value="">-- Select Traffic Level --</option>
+                        <option value="Low">Low</option>
+                        <option value="Medium">Medium</option>
+                        <option value="High">High</option>
+                        <option value="Undefined">Undefined</option>
+                    </select>
+                    <button type="submit" class="button"><i class="fa fa-edit"></i> Update Station</button>
+                </form>
+            </div>
+
+            <!-- Tab: Delete Gas Station -->
+            <div class="tab-content" id="tab-delete">
+                <h2>Delete Gas Station</h2>
+                <form id="deleteStationForm">
+                    <label for="deleteStationId">Station ID:</label>
+                    <input type="text" id="deleteStationId" name="stationId" required>
+                    <button type="submit" class="button"><i class="fa fa-trash"></i> Delete Station</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Scripts for Geocoding and AJAX logic -->
+<script>
+    // --- Global Loading Indicator Functions ---
+    function showLoading() {
+        document.getElementById('globalLoading').style.display = 'block';
+    }
+    function hideLoading() {
+        document.getElementById('globalLoading').style.display = 'none';
+    }
+
+    // --- Tab Switching Logic ---
+    const navItems = document.querySelectorAll('.nav-list li');
+    const tabContents = document.querySelectorAll('.tab-content');
+    navItems.forEach(item => {
+        item.addEventListener('click', () => {
+            navItems.forEach(i => i.classList.remove('active'));
+            item.classList.add('active');
+            const tabId = item.getAttribute('data-tab');
+            tabContents.forEach(tab => {
+                tab.classList.remove('active');
+                if (tab.id === tabId) {
+                    tab.classList.add('active');
+                }
+            });
+        });
+    });
+
+    // --- Location Search for Add Station Using Nominatim ---
+    const locateBtn = document.getElementById('locateBtn');
+    locateBtn.addEventListener('click', function() {
+        const searchQuery = document.getElementById('locationSearch').value;
+        if (!searchQuery) {
+            alert("Please enter a location to search.");
+            return;
+        }
+        showLoading();
+        fetch('https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(searchQuery))
+            .then(res => res.json())
+            .then(data => {
+                hideLoading();
+                if (data.length > 0) {
+                    const result = data[0]; // take the first result
+                    // Update the visible input with the found location
+                    document.getElementById('locationSearch').value = result.display_name;
+                    // Store found values in hidden fields
+                    document.getElementById('latitude').value = result.lat;
+                    document.getElementById('longitude').value = result.lon;
+                    document.getElementById('location').value = result.display_name;
+                    document.getElementById('locationDisplay').textContent = "Location Found: " + result.display_name;
+                } else {
+                    alert("No location found. Please try a different query.");
+                }
+            })
+            .catch(err => {
+                hideLoading();
+                alert("Error fetching location: " + err);
+            });
+    });
+
+    // --- Location Search for Update Station Using Nominatim ---
+    const updateLocateBtn = document.getElementById('updateLocateBtn');
+    updateLocateBtn.addEventListener('click', function() {
+        const searchQuery = document.getElementById('updateLocationSearch').value;
+        if (!searchQuery) {
+            alert("Please enter a location to search.");
+            return;
+        }
+        showLoading();
+        fetch('https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(searchQuery))
+            .then(res => res.json())
+            .then(data => {
+                hideLoading();
+                if (data.length > 0) {
+                    const result = data[0];
+                    // Update the visible input with the found location
+                    document.getElementById('updateLocationSearch').value = result.display_name;
+                    // Store found values in hidden fields for update
+                    document.getElementById('updateLatitude').value = result.lat;
+                    document.getElementById('updateLongitude').value = result.lon;
+                    document.getElementById('updateLocation').value = result.display_name;
+                    document.getElementById('updateLocationDisplay').textContent = "Location Found: " + result.display_name;
+                } else {
+                    alert("No location found. Please try a different query.");
+                }
+            })
+            .catch(err => {
+                hideLoading();
+                alert("Error fetching location: " + err);
+            });
+    });
+
+    // --- Add Station Form Submission ---
+    document.getElementById('addStationForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        // Validate that a found location exists (from the hidden field)
+        if (!document.getElementById('latitude').value || !document.getElementById('longitude').value || !document.getElementById('location').value) {
+            alert("Please locate a valid location.");
+            return;
+        }
+        const stationData = {
+            name: document.getElementById('stationName').value,
+            location: document.getElementById('location').value, // use the found location
+            availability: document.getElementById('availability').value,
+            traffic: document.getElementById('traffic').value,
+            latitude: document.getElementById('latitude').value,
+            longitude: document.getElementById('longitude').value
+        };
+        showLoading();
+        fetch('/api/admin/gas-stations', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(stationData)
+        })
+            .then(res => res.json())
+            .then(data => {
+                alert("Gas Station added successfully!");
+                hideLoading();
+                loadStations();
+                // Reset the Add Station form inputs
+                document.getElementById('stationName').value = '';
+                document.getElementById('locationSearch').value = '';
+                document.getElementById('locationDisplay').textContent = '';
+                document.getElementById('latitude').value = '';
+                document.getElementById('longitude').value = '';
+                document.getElementById('location').value = '';
+                document.getElementById('availability').selectedIndex = 0;
+                document.getElementById('traffic').selectedIndex = 0;
+            })
+            .catch(err => {
+                alert("Error adding station: " + err);
+                hideLoading();
+            });
+    });
+
+    // --- Load Stations and Render as Cards ---
+    function loadStations() {
+        showLoading();
+        fetch('/api/admin/gas-stations')
+            .then(res => res.json())
+            .then(data => {
+                const container = document.getElementById('stationsContainer');
+                container.innerHTML = '';
+                data.forEach(station => {
+                    // Use fallback if a field is missing (display "-" instead)
+                    const stationId = station.id || station._id || '-';
+                    const availability = station.availability ? station.availability : "-";
+                    const traffic = station.traffic ? station.traffic : "-";
+                    const card = document.createElement('div');
+                    card.className = 'station-card';
+                    card.innerHTML = `
+              <div class="card-actions" style="position:absolute; top:10px; right:10px;">
+                <button class="action-btn" onclick="updateTrafficPrompt('${stationId}')"><i class="fa fa-edit"></i></button>
+                <button class="action-btn" onclick="deleteStation('${stationId}')"><i class="fa fa-trash"></i></button>
+              </div>
+              <h3>${station.name}</h3>
+              <p><strong>ID:</strong> ${stationId}</p>
+              <p><strong>Location:</strong> ${station.location}</p>
+              <p><strong>Availability:</strong> ${availability}</p>
+              <p><strong>Traffic:</strong> ${traffic}</p>
+            `;
+                    container.appendChild(card);
+                });
+                hideLoading();
+            })
+            .catch(err => {
+                alert("Error loading stations: " + err);
+                hideLoading();
+            });
+    }
+    loadStations();
+
+    // --- Delete Station ---
+    function deleteStation(id) {
+        if (confirm("Are you sure you want to delete station: " + id + "?")) {
+            showLoading();
+            fetch('/api/admin/gas-stations/' + id, { method: 'DELETE' })
+                .then(res => res.text())
+                .then(data => {
+                    alert(data);
+                    hideLoading();
+                    loadStations();
+                })
+                .catch(err => {
+                    alert("Error deleting station: " + err);
+                    hideLoading();
+                });
+        }
+    }
+
+    // --- Update Traffic via Prompt from Card ---
+    function updateTrafficPrompt(id) {
+        const newTraffic = prompt("Enter new traffic level (Low, Medium, High, Undefined):");
+        if (newTraffic) {
+            showLoading();
+            fetch('/api/admin/gas-stations/update-traffic/' + id, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(newTraffic)
+            })
+                .then(res => res.json())
+                .then(data => {
+                    alert("Traffic updated successfully!");
+                    hideLoading();
+                    loadStations();
+                })
+                .catch(err => {
+                    alert("Error updating traffic: " + err);
+                    hideLoading();
+                });
+        }
+    }
+
+    // --- Update Station Form Submission (Tab Update) ---
+    document.getElementById('updateStationForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const id = document.getElementById('updateStationId').value;
+        // Use the found update location if available; otherwise, use the text in the input
+        let newLocation = document.getElementById('updateLocation').value;
+        if (!newLocation && document.getElementById('updateLocation').value === '' && document.getElementById('updateLocationDisplay')?.textContent) {
+            newLocation = document.getElementById('updateLocationDisplay').textContent.replace("Location Found: ", "");
+        }
+        const stationData = {
+            name: document.getElementById('updateStationName').value,
+            location: newLocation,
+            availability: document.getElementById('updateAvailability').value,
+            traffic: document.getElementById('updateTraffic').value
+        };
+        showLoading();
+        fetch('/api/admin/gas-stations/' + id, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(stationData)
+        })
+            .then(res => res.json())
+            .then(data => {
+                alert("Gas Station updated successfully!");
+                hideLoading();
+                loadStations();
+                // Reset the update form fields
+                document.getElementById('updateStationId').value = '';
+                document.getElementById('updateStationName').value = '';
+                document.getElementById('updateLocation').value = '';
+                document.getElementById('updateLocationSearch').value = '';
+                if(document.getElementById('updateLocationDisplay')) {
+                    document.getElementById('updateLocationDisplay').textContent = '';
+                }
+                document.getElementById('updateAvailability').selectedIndex = 0;
+                document.getElementById('updateTraffic').selectedIndex = 0;
+            })
+            .catch(err => {
+                alert("Error updating station: " + err);
+                hideLoading();
+            });
+    });
+
+    // --- Delete Station Form Submission (Tab Delete) ---
+    document.getElementById('deleteStationForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const id = document.getElementById('deleteStationId').value;
+        if (confirm("Are you sure you want to delete station: " + id + "?")) {
+            showLoading();
+            fetch('/api/admin/gas-stations/' + id, { method: 'DELETE' })
+                .then(res => res.text())
+                .then(data => {
+                    alert(data);
+                    hideLoading();
+                    loadStations();
+                })
+                .catch(err => {
+                    alert("Error deleting station: " + err);
+                    hideLoading();
+                });
+        }
+    });
+</script>
+</body>
+</html>
