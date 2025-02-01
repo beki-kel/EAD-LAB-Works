@@ -10,7 +10,9 @@ import com.alenedaj.utils.MapboxUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -38,10 +40,11 @@ public class GasStationService {
 
         gasStation.setFuelAvailable(dto.isFuelAvailable());
         gasStation.setTrafficLevel(dto.getTrafficLevel() != null ? dto.getTrafficLevel() : "UNDEFINED");
+        gasStation.setLocation(dto.getLocation());
         return gasStation;
     }
 
-    // Convert Entity to DTO
+    // Convert Entity to DTO (for internal use)
     private GasStationDTO mapToDTO(GasStation gasStation) {
         GasStationDTO dto = new GasStationDTO();
         dto.setName(gasStation.getName());
@@ -49,6 +52,7 @@ public class GasStationService {
         dto.setLongitude(gasStation.getLongitude());
         dto.setFuelAvailable(gasStation.isFuelAvailable());
         dto.setTrafficLevel(gasStation.getTrafficLevel());
+        dto.setLocation(gasStation.getLocation());
         return dto;
     }
 
@@ -77,6 +81,8 @@ public class GasStationService {
             double[] coordinates = mapboxUtil.getCoordinates(updatedStation.getLocation());
             station.setLatitude(coordinates[0]);
             station.setLongitude(coordinates[1]);
+            // Optionally update the stored location text as well
+            station.setLocation(updatedStation.getLocation());
         }
 
         station.setFuelAvailable(updatedStation.isFuelAvailable());
@@ -94,10 +100,10 @@ public class GasStationService {
 
     // ✅ Get Distance to Gas Station
     public double getDistanceToStation(String userId, String stationId) {
-        User user = userRepository.findById(new ObjectId(userId))  // ✅ Convert ID to ObjectId
+        User user = userRepository.findById(new ObjectId(userId))
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        GasStation station = gasStationRepository.findById(new ObjectId(stationId))  // ✅ Convert ID to ObjectId
+        GasStation station = gasStationRepository.findById(new ObjectId(stationId))
                 .orElseThrow(() -> new RuntimeException("Gas station not found"));
 
         return mapboxUtil.calculateDistance(
@@ -127,11 +133,16 @@ public class GasStationService {
         return mapToDTO(station);
     }
 
-    // ✅ Get All Gas Stations
+    // ✅ Get All Gas Stations (Return DTO list with id added in service)
     public List<GasStationDTO> getAllGasStations() {
-        return gasStationRepository.findAll()
-                .stream()
-                .map(this::mapToDTO)
-                .collect(Collectors.toList());
+        return gasStationRepository.findAll().stream().map(gasStation -> {
+            GasStationDTO dto = mapToDTO(gasStation);
+            // Here, since the DTO doesn't have an "id" field, we can append it to the name,
+            // or—if you prefer not to alter the name—you can simply set a custom property via a wrapper.
+            // For illustration, we append the id to the DTO's name.
+            dto.setName(gasStation.getId().toHexString() + " - " + dto.getName());
+
+            return dto;
+        }).collect(Collectors.toList());
     }
 }

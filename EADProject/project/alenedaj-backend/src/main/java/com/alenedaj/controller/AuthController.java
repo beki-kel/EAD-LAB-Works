@@ -28,17 +28,23 @@ public class AuthController {
         this.authService = authService;
     }
 
+    // Display registration page
     @GetMapping("/register")
     public String registerPage(Model model) {
-        return "register";
+        return "register";  // resolves to register.html
     }
 
+    // Display login page
     @GetMapping("/login")
     public String loginPage(Model model) {
-        return "login";
+        return "login";  // resolves to login.html
     }
 
+    /* ============================
+       API Endpoints (JSON/REST)
+       ============================ */
 
+    // Send email verification code
     @PostMapping("/api/send-verification")
     public ResponseEntity<Map<String, String>> sendVerification(@RequestParam String email) throws MessagingException {
         try {
@@ -50,6 +56,7 @@ public class AuthController {
         }
     }
 
+    // Register a new user
     @PostMapping("/api/register")
     public ResponseEntity<Map<String, String>> register(@Valid @RequestBody UserDTO userDTO) {
         try {
@@ -62,6 +69,7 @@ public class AuthController {
         }
     }
 
+    // Login user (Store JWT in cookie & return role)
     @PostMapping("/api/login")
     public ResponseEntity<Map<String, String>> login(@Valid @RequestBody LoginDTO loginDTO, HttpServletResponse response) {
         try {
@@ -69,6 +77,7 @@ public class AuthController {
             String token = authService.login(loginDTO);
             String role = authService.getUserRole(loginDTO.getEmail());
 
+            // Store token in HTTP-only cookie
             Cookie jwtCookie = new Cookie("jwt", token);
             jwtCookie.setHttpOnly(true);
             jwtCookie.setPath("/");
@@ -81,17 +90,19 @@ public class AuthController {
         }
     }
 
+    // Logout (Clear JWT Cookie)
     @PostMapping("/api/logout")
     public ResponseEntity<Map<String, String>> logout(HttpServletResponse response) {
         Cookie jwtCookie = new Cookie("jwt", "");
         jwtCookie.setHttpOnly(true);
         jwtCookie.setPath("/");
-        jwtCookie.setMaxAge(0);
+        jwtCookie.setMaxAge(0); // Expire immediately
         response.addCookie(jwtCookie);
         logger.info("User logged out successfully");
         return ResponseEntity.ok(Map.of("message", "Logout successful"));
     }
 
+    // Update User Location (Auto-Fill Coordinates)
     @PutMapping("/api/update-location/{userId}")
     public ResponseEntity<Map<String, String>> updateUserLocation(@PathVariable String userId, @RequestBody String location) {
         try {
@@ -103,6 +114,7 @@ public class AuthController {
         }
     }
 
+    // Get User Info (Email & Role)
     @GetMapping("/api/user-info")
     public ResponseEntity<Map<String, String>> getUserInfo(@RequestParam String email) {
         try {

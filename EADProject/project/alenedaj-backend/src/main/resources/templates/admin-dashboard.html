@@ -3,8 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <title>Admin Dashboard - ale nedaj</title>
+    <!-- Dashboard and Common CSS -->
     <link rel="stylesheet" th:href="@{/css/dashboard.css}">
     <link rel="stylesheet" th:href="@{/css/style.css}">
+    <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         /* Global loading indicator */
@@ -143,11 +145,11 @@
                 <form id="updateStationForm">
                     <label for="updateStationId">Station ID:</label>
                     <input type="text" id="updateStationId" name="stationId" required>
-                    <label for="updateStationName">New Station Name:</label>
-                    <input type="text" id="updateStationName" name="stationName">
+                    <label for="updateStationName">Station Name:</label>
+                    <input type="text" id="updateStationName" name="stationName" required>
 
                     <!-- Location Search for Update -->
-                    <label for="updateLocationSearch">New Location:</label>
+                    <label for="updateLocationSearch">Location:</label>
                     <div id="updateLocationSearchContainer" class="location-search-container">
                         <input type="text" id="updateLocationSearch" placeholder="Enter new location">
                         <button type="button" id="updateLocateBtn" class="button"><i class="fa fa-search"></i> Locate</button>
@@ -333,23 +335,37 @@
                 const container = document.getElementById('stationsContainer');
                 container.innerHTML = '';
                 data.forEach(station => {
-                    // Use fallback if a field is missing (display "-" instead)
-                    const stationId = station.id || station._id || '-';
-                    const availability = station.availability ? station.availability : "-";
-                    const traffic = station.traffic ? station.traffic : "-";
+                    // Extract station id and name.
+                    let stationId, stationName;
+                    if (station.id) {
+                        stationId = station.id;
+                        stationName = station.name;
+                    } else if (station.name && station.name.includes(" - ")) {
+                        let parts = station.name.split(" - ");
+                        stationId = parts[0];
+                        stationName = parts.slice(1).join(" - ");
+                    } else {
+                        stationId = '-';
+                        stationName = station.name;
+                    }
+                    // Convert fuelAvailable boolean to "Yes"/"No"
+                    let availability = (typeof station.fuelAvailable === "boolean")
+                        ? (station.fuelAvailable ? "Yes" : "No")
+                        : "-";
+                    const traffic = station.trafficLevel ? station.trafficLevel : "-";
                     const card = document.createElement('div');
                     card.className = 'station-card';
                     card.innerHTML = `
-              <div class="card-actions" style="position:absolute; top:10px; right:10px;">
-                <button class="action-btn" onclick="updateTrafficPrompt('${stationId}')"><i class="fa fa-edit"></i></button>
-                <button class="action-btn" onclick="deleteStation('${stationId}')"><i class="fa fa-trash"></i></button>
-              </div>
-              <h3>${station.name}</h3>
-              <p><strong>ID:</strong> ${stationId}</p>
-              <p><strong>Location:</strong> ${station.location}</p>
-              <p><strong>Availability:</strong> ${availability}</p>
-              <p><strong>Traffic:</strong> ${traffic}</p>
-            `;
+                        <div class="card-actions" style="position:absolute; top:10px; right:10px;">
+                            <button class="action-btn" onclick="updateTrafficPrompt('${stationId}')"><i class="fa fa-edit"></i></button>
+                            <button class="action-btn" onclick="deleteStation('${stationId}')"><i class="fa fa-trash"></i></button>
+                        </div>
+                        <h3>${stationName}</h3>
+                        <p><strong>ID:</strong> ${stationId}</p>
+                        <p><strong>Location:</strong> ${station.location}</p>
+                        <p><strong>Availability:</strong> ${availability}</p>
+                        <p><strong>Traffic:</strong> ${traffic}</p>
+                    `;
                     container.appendChild(card);
                 });
                 hideLoading();
@@ -408,7 +424,7 @@
         const id = document.getElementById('updateStationId').value;
         // Use the found update location if available; otherwise, use the text in the input
         let newLocation = document.getElementById('updateLocation').value;
-        if (!newLocation && document.getElementById('updateLocation').value === '' && document.getElementById('updateLocationDisplay')?.textContent) {
+        if (!newLocation && document.getElementById('updateLocationDisplay') && document.getElementById('updateLocationDisplay').textContent) {
             newLocation = document.getElementById('updateLocationDisplay').textContent.replace("Location Found: ", "");
         }
         const stationData = {

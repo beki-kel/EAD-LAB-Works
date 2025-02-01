@@ -3,89 +3,103 @@
 <head>
     <meta charset="UTF-8">
     <title>User Dashboard - ale nedaj</title>
+    <!-- Common and Dashboard CSS -->
     <link rel="stylesheet" th:href="@{/css/dashboard.css}">
-    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/user-dashboard.css}">
     <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Optional inline adjustments for consistency */
+        /* Global loading indicator */
+        #globalLoading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background: #2980b9;
+            color: #fff;
+            text-align: center;
+            padding: 5px;
+            display: none;
+            z-index: 1000;
+        }
+    </style>
 </head>
 <body>
+<!-- Global Loading Indicator -->
+<div id="globalLoading">Loading...</div>
+
+<!-- Dashboard Container: Using a similar sidebar layout as Admin Dashboard -->
 <div class="dashboard-container">
     <nav class="sidebar">
         <div class="logo">
             <h2>ale nedaj</h2>
         </div>
         <ul class="nav-list">
-            <li class="active" data-tab="tab-list"><i class="fa fa-list"></i> Stations</li>
-            <li data-tab="tab-distance"><i class="fa fa-road"></i> Get Distance</li>
-            <li data-tab="tab-directions"><i class="fa fa-map"></i> Get Directions</li>
-            <li data-tab="tab-traffic"><i class="fa fa-tachometer-alt"></i> Update Traffic</li>
+            <!-- We reuse a similar sidebar menu; you may add additional items if needed -->
+            <li class="active" data-tab="tab-home"><i class="fa fa-home"></i> Home</li>
+            <li data-tab="tab-location"><i class="fa fa-map-marker-alt"></i> My Location</li>
+            <li data-tab="tab-stations"><i class="fa fa-gas-pump"></i> Gas Stations</li>
         </ul>
     </nav>
     <div class="main-content">
-        <header>
+        <!-- Header with Logout -->
+        <header class="user-header">
             <h1>User Dashboard</h1>
+            <button id="logoutBtn" class="button logout-btn"><i class="fa fa-sign-out-alt"></i> Logout</button>
         </header>
+        <!-- Hidden field for current user id (set by server-side code or JavaScript) -->
+        <input type="hidden" id="userId" value="PUT_USER_ID_HERE">
+
+        <!-- Tab Contents -->
         <div class="tabs">
-            <!-- Tab: List Gas Stations -->
-            <div class="tab-content active" id="tab-list">
-                <h2>Gas Stations</h2>
-                <table id="stationsTable">
-                    <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Location</th>
-                        <th>Actions</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <!-- Populated via AJAX -->
-                    </tbody>
-                </table>
+            <!-- Tab: Home (Welcome and instructions) -->
+            <div class="tab-content active" id="tab-home">
+                <h2>Welcome!</h2>
+                <p>Use the "My Location" tab to update your current location. Your location is used to calculate the distance to nearby gas stations.</p>
+                <p>Then, visit the "Gas Stations" tab to view details about each station, including the distance from your location. You can also update the traffic level for any station.</p>
             </div>
-            <!-- Tab: Get Distance -->
-            <div class="tab-content" id="tab-distance">
-                <h2>Get Distance to Station</h2>
-                <form id="distanceForm">
-                    <label for="userId">Your User ID:</label>
-                    <input type="text" id="userId" name="userId" required>
-                    <label for="stationId">Station ID:</label>
-                    <input type="text" id="stationId" name="stationId" required>
-                    <button type="submit" class="button"><i class="fa fa-road"></i> Get Distance</button>
+
+            <!-- Tab: My Location -->
+            <div class="tab-content" id="tab-location">
+                <h2>Update My Location</h2>
+                <form id="updateLocationForm">
+                    <label for="userLocationSearch">Enter Your Location:</label>
+                    <div class="location-search-container">
+                        <input type="text" id="userLocationSearch" placeholder="e.g., Addis Ababa, Ethiopia" required>
+                        <button type="button" id="userLocateBtn" class="button"><i class="fa fa-search"></i> Locate</button>
+                    </div>
+                    <div id="userLocationDisplay" class="location-display"></div>
+                    <!-- Hidden fields -->
+                    <input type="hidden" id="userLatitude" name="userLatitude">
+                    <input type="hidden" id="userLongitude" name="userLongitude">
+                    <input type="hidden" id="userLocation" name="userLocation">
+                    <button type="submit" class="button">Update My Location</button>
                 </form>
-                <p id="distanceResult"></p>
             </div>
-            <!-- Tab: Get Directions -->
-            <div class="tab-content" id="tab-directions">
-                <h2>Get Driving Directions</h2>
-                <form id="directionsForm">
-                    <label for="stationIdDir">Station ID:</label>
-                    <input type="text" id="stationIdDir" name="stationId" required>
-                    <label for="userLat">Your Latitude:</label>
-                    <input type="number" step="any" id="userLat" name="userLat" required>
-                    <label for="userLon">Your Longitude:</label>
-                    <input type="number" step="any" id="userLon" name="userLon" required>
-                    <button type="submit" class="button"><i class="fa fa-map"></i> Get Directions</button>
-                </form>
-                <p id="directionsResult"></p>
-            </div>
-            <!-- Tab: Update Traffic -->
-            <div class="tab-content" id="tab-traffic">
-                <h2>Update Traffic Level</h2>
-                <form id="trafficForm">
-                    <label for="stationIdTraffic">Station ID:</label>
-                    <input type="text" id="stationIdTraffic" name="stationId" required>
-                    <label for="trafficLevel">Traffic Level:</label>
-                    <input type="text" id="trafficLevel" name="trafficLevel" required>
-                    <button type="submit" class="button"><i class="fa fa-tachometer-alt"></i> Update Traffic</button>
-                </form>
-                <p id="trafficResult"></p>
+
+            <!-- Tab: Gas Stations -->
+            <div class="tab-content" id="tab-stations">
+                <h2>Nearby Gas Stations</h2>
+                <div id="stationsContainer" class="stations-container">
+                    <!-- Gas station cards will be dynamically loaded here -->
+                </div>
             </div>
         </div>
     </div>
 </div>
 
+<!-- JavaScript Section -->
 <script>
-    // Tab switching logic for user dashboard
+    // --- Global Loading Indicator ---
+    function showLoading() {
+        document.getElementById('globalLoading').style.display = 'block';
+    }
+    function hideLoading() {
+        document.getElementById('globalLoading').style.display = 'none';
+    }
+
+    // --- Tab Switching Logic (similar to Admin Dashboard) ---
     const navItems = document.querySelectorAll('.nav-list li');
     const tabContents = document.querySelectorAll('.tab-content');
     navItems.forEach(item => {
@@ -95,79 +109,273 @@
             const tabId = item.getAttribute('data-tab');
             tabContents.forEach(tab => {
                 tab.classList.remove('active');
-                if(tab.id === tabId){
+                if (tab.id === tabId) {
                     tab.classList.add('active');
                 }
             });
         });
     });
 
-    // Load gas stations into table
-    function loadStations(){
-        fetch('/api/admin/gas-stations')
+    // --- Logout Functionality ---
+    document.getElementById('logoutBtn').addEventListener('click', function() {
+        showLoading();
+        fetch('/auth/api/logout', { method: 'POST' })
+            .then(res => res.text())
+            .then(data => {
+                alert("Logged out successfully!");
+                hideLoading();
+                window.location.href = '/auth/login';
+            })
+            .catch(err => {
+                alert("Error during logout: " + err);
+                hideLoading();
+            });
+    });
+
+    // --- Update User Location ---
+    const userLocateBtn = document.getElementById('userLocateBtn');
+    userLocateBtn.addEventListener('click', function() {
+        const searchQuery = document.getElementById('userLocationSearch').value;
+        if (!searchQuery) {
+            alert("Please enter your location.");
+            return;
+        }
+        showLoading();
+        fetch('https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(searchQuery))
             .then(res => res.json())
             .then(data => {
-                const tbody = document.getElementById('stationsTable').querySelector('tbody');
-                tbody.innerHTML = '';
-                data.forEach(station => {
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `
-                        <td>${station.name}</td>
-                        <td>${station.location}</td>
-                        <td>
-                            <button class="action-btn" onclick="alert('For more details, use the other tabs')"><i class="fa fa-info-circle"></i></button>
-                        </td>
-                    `;
-                    tbody.appendChild(tr);
-                });
+                hideLoading();
+                if (data.length > 0) {
+                    const result = data[0];
+                    // Update the visible input with the found location
+                    document.getElementById('userLocationSearch').value = result.display_name;
+                    // Store values in hidden fields
+                    document.getElementById('userLatitude').value = result.lat;
+                    document.getElementById('userLongitude').value = result.lon;
+                    document.getElementById('userLocation').value = result.display_name;
+                    document.getElementById('userLocationDisplay').textContent = "Location Found: " + result.display_name;
+                } else {
+                    alert("No location found. Please try again.");
+                }
             })
-            .catch(err => console.error('Error loading stations:', err));
-    }
-    loadStations();
+            .catch(err => {
+                hideLoading();
+                alert("Error fetching location: " + err);
+            });
+    });
 
-    // Get Distance form submission
-    document.getElementById('distanceForm').addEventListener('submit', function(e){
+    document.getElementById('updateLocationForm')?.addEventListener('submit', function(e) {
         e.preventDefault();
+        // Update user location via API
         const userId = document.getElementById('userId').value;
-        const stationId = document.getElementById('stationId').value;
-        fetch(`/api/admin/gas-stations/distance/${userId}/${stationId}`)
-            .then(res => res.json())
-            .then(data => {
-                document.getElementById('distanceResult').textContent = `Distance: ${data} km`;
-            })
-            .catch(err => alert('Error fetching distance: ' + err));
-    });
-
-    // Get Directions form submission
-    document.getElementById('directionsForm').addEventListener('submit', function(e){
-        e.preventDefault();
-        const stationId = document.getElementById('stationIdDir').value;
-        const userLat = document.getElementById('userLat').value;
-        const userLon = document.getElementById('userLon').value;
-        fetch(`/api/admin/gas-stations/directions/${stationId}?userLat=${userLat}&userLon=${userLon}`)
-            .then(res => res.json())
-            .then(data => {
-                document.getElementById('directionsResult').textContent = `Directions: ${data}`;
-            })
-            .catch(err => alert('Error fetching directions: ' + err));
-    });
-
-    // Update Traffic form submission
-    document.getElementById('trafficForm').addEventListener('submit', function(e){
-        e.preventDefault();
-        const stationId = document.getElementById('stationIdTraffic').value;
-        const trafficLevel = document.getElementById('trafficLevel').value;
-        fetch(`/api/admin/gas-stations/update-traffic/${stationId}`, {
+        if (!document.getElementById('userLatitude').value || !document.getElementById('userLongitude').value || !document.getElementById('userLocation').value) {
+            alert("Please locate a valid location first.");
+            return;
+        }
+        const location = document.getElementById('userLocation').value;
+        showLoading();
+        fetch('/auth/api/update-location/' + userId, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(trafficLevel)
+            body: JSON.stringify(location)
         })
             .then(res => res.json())
             .then(data => {
-                document.getElementById('trafficResult').textContent = 'Traffic updated successfully!';
+                alert(data.message);
+                hideLoading();
+                // Refresh gas stations list to recalc distance
                 loadStations();
             })
-            .catch(err => alert('Error updating traffic: ' + err));
+            .catch(err => {
+                alert("Error updating location: " + err);
+                hideLoading();
+            });
+    });
+
+    // --- Load Gas Stations and Render as Cards ---
+    function loadStations() {
+        showLoading();
+        fetch('/api/admin/gas-stations')
+            .then(res => res.json())
+            .then(data => {
+                const container = document.getElementById('stationsContainer');
+                container.innerHTML = '';
+                const userId = document.getElementById('userId').value;
+                data.forEach(station => {
+                    let stationId, stationName;
+                    if (station.id) {
+                        stationId = station.id;
+                        stationName = station.name;
+                    } else if (station.name && station.name.includes(" - ")) {
+                        let parts = station.name.split(" - ");
+                        stationId = parts[0];
+                        stationName = parts.slice(1).join(" - ");
+                    } else {
+                        stationId = '-';
+                        stationName = station.name;
+                    }
+                    // Convert fuelAvailable boolean to Yes/No
+                    let availability = (typeof station.fuelAvailable === "boolean")
+                        ? (station.fuelAvailable ? "Yes" : "No")
+                        : "-";
+                    const traffic = station.trafficLevel ? station.trafficLevel : "-";
+
+                    // Create card element
+                    const card = document.createElement('div');
+                    card.className = 'station-card';
+                    // Create a container to display the calculated distance
+                    const distanceContainer = document.createElement('div');
+                    distanceContainer.className = 'distance-container';
+                    distanceContainer.id = 'distance-' + stationId;
+
+                    card.innerHTML = `
+              <div class="card-actions" style="position:absolute; top:10px; right:10px;">
+                <button class="action-btn" onclick="updateTrafficPrompt('${stationId}')"><i class="fa fa-edit"></i></button>
+                <button class="action-btn" onclick="deleteStation('${stationId}')"><i class="fa fa-trash"></i></button>
+              </div>
+              <h3>${stationName}</h3>
+              <p><strong>ID:</strong> ${stationId}</p>
+              <p><strong>Location:</strong> ${station.location}</p>
+              <p><strong>Availability:</strong> ${availability}</p>
+              <p><strong>Traffic:</strong> ${traffic}</p>
+            `;
+                    // Create Calculate Distance button
+                    const distanceBtn = document.createElement('button');
+                    distanceBtn.className = 'button distance-btn';
+                    distanceBtn.innerHTML = '<i class="fa fa-road"></i> Calculate Distance';
+                    distanceBtn.onclick = function() {
+                        calculateDistance(userId, stationId);
+                    };
+                    card.appendChild(distanceBtn);
+                    card.appendChild(distanceContainer);
+                    container.appendChild(card);
+                });
+                hideLoading();
+            })
+            .catch(err => {
+                alert("Error loading stations: " + err);
+                hideLoading();
+            });
+    }
+    loadStations();
+
+    // --- Calculate Distance for a Station ---
+    function calculateDistance(userId, stationId) {
+        showLoading();
+        fetch(`/api/admin/gas-stations/distance/${userId}/${stationId}`)
+            .then(res => res.json())
+            .then(distance => {
+                hideLoading();
+                const distElem = document.getElementById('distance-' + stationId);
+                distElem.textContent = "Distance: " + distance.toFixed(2) + " km";
+            })
+            .catch(err => {
+                alert("Error calculating distance: " + err);
+                hideLoading();
+            });
+    }
+
+    // --- Delete Station ---
+    function deleteStation(id) {
+        if (confirm("Are you sure you want to delete station: " + id + "?")) {
+            showLoading();
+            fetch('/api/admin/gas-stations/' + id, { method: 'DELETE' })
+                .then(res => res.text())
+                .then(data => {
+                    alert(data);
+                    hideLoading();
+                    loadStations();
+                })
+                .catch(err => {
+                    alert("Error deleting station: " + err);
+                    hideLoading();
+                });
+        }
+    }
+
+    // --- Update Traffic via Prompt from Card ---
+    function updateTrafficPrompt(id) {
+        const newTraffic = prompt("Enter new traffic level (Low, Medium, High, Undefined):");
+        if (newTraffic) {
+            showLoading();
+            fetch('/api/admin/gas-stations/update-traffic/' + id, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(newTraffic)
+            })
+                .then(res => res.json())
+                .then(data => {
+                    alert("Traffic updated successfully!");
+                    hideLoading();
+                    loadStations();
+                })
+                .catch(err => {
+                    alert("Error updating traffic: " + err);
+                    hideLoading();
+                });
+        }
+    }
+
+    // --- Update Station Form Submission (Tab Update) ---
+    document.getElementById('updateStationForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const id = document.getElementById('updateStationId').value;
+        let newLocation = document.getElementById('updateLocation').value;
+        if (!newLocation && document.getElementById('updateLocationDisplay') && document.getElementById('updateLocationDisplay').textContent) {
+            newLocation = document.getElementById('updateLocationDisplay').textContent.replace("Location Found: ", "");
+        }
+        const stationData = {
+            name: document.getElementById('updateStationName').value,
+            location: newLocation,
+            availability: document.getElementById('updateAvailability').value,
+            traffic: document.getElementById('updateTraffic').value
+        };
+        showLoading();
+        fetch('/api/admin/gas-stations/' + id, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(stationData)
+        })
+            .then(res => res.json())
+            .then(data => {
+                alert("Gas Station updated successfully!");
+                hideLoading();
+                loadStations();
+                // Reset update form fields
+                document.getElementById('updateStationId').value = '';
+                document.getElementById('updateStationName').value = '';
+                document.getElementById('updateLocation').value = '';
+                document.getElementById('updateLocationSearch').value = '';
+                if(document.getElementById('updateLocationDisplay')) {
+                    document.getElementById('updateLocationDisplay').textContent = '';
+                }
+                document.getElementById('updateAvailability').selectedIndex = 0;
+                document.getElementById('updateTraffic').selectedIndex = 0;
+            })
+            .catch(err => {
+                alert("Error updating station: " + err);
+                hideLoading();
+            });
+    });
+
+    // --- Delete Station Form Submission (Tab Delete) ---
+    document.getElementById('deleteStationForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const id = document.getElementById('deleteStationId').value;
+        if (confirm("Are you sure you want to delete station: " + id + "?")) {
+            showLoading();
+            fetch('/api/admin/gas-stations/' + id, { method: 'DELETE' })
+                .then(res => res.text())
+                .then(data => {
+                    alert(data);
+                    hideLoading();
+                    loadStations();
+                })
+                .catch(err => {
+                    alert("Error deleting station: " + err);
+                    hideLoading();
+                });
+        }
     });
 </script>
 </body>
