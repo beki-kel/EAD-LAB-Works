@@ -5,7 +5,6 @@
     <title>Admin Dashboard - ale nedaj</title>
     <link rel="stylesheet" th:href="@{/css/style.css}">
     <link rel="stylesheet" th:href="@{/css/dashboard.css}">
-<!--    <link rel="stylesheet" th:href="@{/css/user-dashboard.css}">-->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         #globalLoading {
@@ -37,6 +36,10 @@
             max-width: none;
         }
 
+        #updateLocateBtn{
+            width: 50px;
+            margin: 0;
+        }
         #delete-wrapper{
             display: flex;
             gap: 10px;
@@ -55,6 +58,25 @@
             background-color: rgb(57, 94, 255);
         }
 
+        .traffic-high {
+            color: #ff4d4d;
+            font-weight: bold;
+        }
+
+        .traffic-medium {
+            color: #ffcc00;
+            font-weight: bold;
+        }
+
+        .traffic-low {
+            color: #4caf50;
+            font-weight: bold;
+        }
+
+        .traffic-undefined {
+            color: #999;
+            font-style: italic;
+        }
         .location-display {
             margin-top: 5px;
             font-style: italic;
@@ -101,9 +123,18 @@
             font-size: 12px;
         }
 
+
         select:hover {
             border-color: #2980b9;
             box-shadow: 0 0 8px rgba(41, 128, 185, 0.3);
+        }
+        .delete-btn{
+            width: 50px;
+            background: red;
+        }
+        .delete-btn:hover{
+            background: #a40000;
+        ;
         }
 
         select:focus {
@@ -120,6 +151,7 @@
             background-color: #fff;
             color: #333;
         }
+
 
         #delete-btn{
             color:red;
@@ -245,7 +277,7 @@
                     <label for="updateLocationSearch">Location:</label>
                     <div id="updateLocationSearchContainer" class="location-search-container">
                         <input type="text" id="updateLocationSearch" placeholder="Enter new location">
-                        <button type="button" id="updateLocateBtn" class="button"><i class="fa fa-search"></i> Locate
+                        <button type="button" id="updateLocateBtn" class="button"><i class="fa fa-search"></i>
                         </button>
                     </div>
                     <div id="updateLocationDisplay" class="location-display"></div>
@@ -267,18 +299,17 @@
                         <option value="High">High</option>
                         <option value="Undefined">Undefined</option>
                     </select>
-                    <button type="submit" class="button"><i class="fa fa-edit"></i> Update Station</button>
+                    <button type="submit" class="button">Update Station</button>
                 </form>
             </div>
 
-            <!-- Tab: Delete Gas Station -->
             <div class="tab-content" id="tab-delete">
                 <h2>Delete Gas Station</h2>
                 <form id="deleteStationForm">
                     <label for="deleteStationId">Station ID:</label>
                     <div id="delete-wrapper">
                     <input type="text" id="deleteStationId" name="stationId" required>
-                    <button type="submit" class="button"><i class="fa fa-trash"></i></button>
+                    <button type="submit" class="button delete-btn"><i class="fa fa-trash"></i></button>
                     </div>
                 </form>
             </div>
@@ -356,9 +387,7 @@
                 hideLoading();
                 if (data.length > 0) {
                     const result = data[0];
-                    // Update the visible input with the found location
                     document.getElementById('updateLocationSearch').value = result.display_name;
-                    // Store found values in hidden fields for update
                     document.getElementById('updateLatitude').value = result.lat;
                     document.getElementById('updateLongitude').value = result.lon;
                     document.getElementById('updateLocation').value = result.display_name;
@@ -415,7 +444,6 @@
             });
     });
 
-    // --- Load Stations and Render as Cards ---
     function loadStations() {
         showLoading();
         fetch('/api/admin/gas-stations')
@@ -442,20 +470,33 @@
                         ? (station.fuelAvailable ? "Yes" : "No")
                         : "-";
                     const traffic = station.trafficLevel ? station.trafficLevel : "-";
+
+                    // Determine traffic class
+                    let trafficClass = '';
+                    if (traffic === "High") {
+                        trafficClass = 'traffic-high';
+                    } else if (traffic === "Medium") {
+                        trafficClass = 'traffic-medium';
+                    } else if (traffic === "Low") {
+                        trafficClass = 'traffic-low';
+                    } else {
+                        trafficClass = 'traffic-undefined';
+                    }
+
                     const card = document.createElement('div');
                     card.className = 'station-card';
                     card.innerHTML = `
-                        <div class="card-actions" style="position:absolute; top:10px; right:10px;">
-                            <button class="action-btn" id="delete-btn" onclick="deleteStation('${stationId}')"><i class="fa fa-trash"></i></button>
-                        </div>
-                        <div class="list-wrapper ">
+                    <div class="card-actions" style="position:absolute; top:10px; right:10px;">
+                        <button class="delete-wrapper" id="delete-btn" onclick="deleteStation('${stationId}')"><i class="fa fa-trash"></i></button>
+                    </div>
+                    <div class="list-wrapper">
                         <h3>${stationName}</h3>
                         <p><strong>ID:</strong> ${stationId}</p>
                         <p><strong>Location:</strong> ${station.location}</p>
                         <p><strong>Availability:</strong> ${availability}</p>
-                        <p><strong>Traffic:</strong> ${traffic}</p>
-                        </div>
-                    `;
+                        <p><strong>Traffic:</strong> <span class="${trafficClass}">${traffic}</span></p>
+                    </div>
+                `;
                     container.appendChild(card);
                 });
                 hideLoading();
