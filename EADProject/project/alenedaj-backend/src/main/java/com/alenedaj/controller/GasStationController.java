@@ -56,15 +56,6 @@ public class GasStationController {
         return ResponseEntity.ok(distance);
     }
 
-    // User: Get driving directions to a gas station
-    @GetMapping("/admin/gas-stations/directions/{id}")
-    public ResponseEntity<String> getDirectionsToStation(@PathVariable String id,
-                                                         @RequestParam double userLat,
-                                                         @RequestParam double userLon) {
-        logger.info("Getting directions to station {} for coordinates: {}, {}", id, userLat, userLon);
-        String directions = gasStationService.getDirectionsToStation(id, userLat, userLon);
-        return ResponseEntity.ok(directions);
-    }
 
     // User: Update traffic level manually via the frontend GUI
     @PutMapping("/gas-stations/update-traffic/{id}")
