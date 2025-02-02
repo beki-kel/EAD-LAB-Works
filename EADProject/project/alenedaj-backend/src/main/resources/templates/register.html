@@ -29,19 +29,17 @@
                 <label for="password">Password:</label>
                 <input type="password" id="password" name="password" required />
             </div>
+            <!-- Verification code input hidden initially -->
             <div id="verificationCodeDiv" style="display: none;">
                 <label for="verificationCode">Verification Code:</label>
                 <input type="text" id="verificationCode" name="verificationCode" placeholder="Enter code" />
             </div>
-
             <div class="verification-section">
-                <button type="button" id="sendVerificationBtn">
-                    Send Verification
-                </button>
+                <button type="button"  id="resendVerificationBtn" style="display: none;">Resend Verification</button>
                 <span id="spinner" class="spinner" style="display:none;"></span>
                 <span id="countdown"></span>
             </div>
-            <button type="submit" class="button">Register</button>
+            <button type="submit" id="registerBtn" class="button">Register</button>
         </form>
         <p style="text-align: center; margin-top: 15px;">
             Already have an account? <a href="/auth/login" class="register">Login here</a>.
@@ -50,72 +48,128 @@
 </div>
 
 <script>
-    // Get all necessary elements
-    const sendBtn = document.getElementById('sendVerificationBtn');
-    const spinner = document.getElementById('spinner'); // Added spinner declaration
+    // Get elements
+    const registerForm = document.getElementById('registerForm');
+    const registerBtn = document.getElementById('registerBtn');
+    const verificationCodeDiv = document.getElementById('verificationCodeDiv');
+    const verificationCodeInput = document.getElementById('verificationCode');
+    const resendBtn = document.getElementById('resendVerificationBtn');
+    const spinner = document.getElementById('spinner');
     const countdownSpan = document.getElementById('countdown');
-    const verificationDiv = document.getElementById('verificationCodeDiv');
 
-    sendBtn.addEventListener('click', function () {
+    // A flag to track if the verification code has been sent at least once.
+    let verificationSent = false;
+    // Timer configuration (in seconds)
+    const RESEND_TIMER_SECONDS = 300;  // 5 minutes
+    let countdownInterval = null;
+
+    // When the user types a verification code, enable the register button (if not empty)
+    verificationCodeInput.addEventListener('input', () => {
+        if (verificationCodeInput.value.trim() !== '') {
+            registerBtn.disabled = false;
+        } else {
+            registerBtn.disabled = true;
+        }
+    });
+
+    // Function to start a countdown for the resend button.
+    function startCountdown(seconds) {
+        let counter = seconds;
+        // Immediately update the countdown text and disable the resend button.
+        countdownSpan.textContent = `Resend in ${counter}s`;
+        resendBtn.disabled = true;
+        countdownInterval = setInterval(() => {
+            counter--;
+            countdownSpan.textContent = `Resend in ${counter}s`;
+            if (counter <= 0) {
+                clearInterval(countdownInterval);
+                countdownSpan.textContent = '';
+                // Enable the resend button once the timer is finished.
+                resendBtn.disabled = false;
+            }
+        }, 1000);
+    }
+
+    // Function to send a verification code
+    function sendVerification() {
         // Convert the email to lower case before sending
         const email = document.getElementById('email').value.toLowerCase();
         if (!email) {
             alert('Please enter your email first.');
             return;
         }
-        sendBtn.disabled = true;
         spinner.style.display = 'inline-block';
-        verificationDiv.style.display = 'block';
 
         fetch('/auth/api/send-verification?email=' + encodeURIComponent(email), {
             method: 'POST'
         })
             .then(response => response.json())
             .then(data => {
+                spinner.style.display = 'none';
                 if (data.error) {
                     alert(data.error);
                     if (data.error.includes("already exists")) {
                         window.location.href = '/auth/login';
                     }
-                    sendBtn.disabled = false;
-                    spinner.style.display = 'none';
                 } else {
                     alert(data.message);
-                    spinner.style.display = 'none';
-                    startCountdown(300);
+                    // Show the verification code field and the resend button
+                    verificationCodeDiv.style.display = 'block';
+                    resendBtn.style.display = 'inline-block';
+                    // Disable the register button until a verification code is provided
+                    registerBtn.disabled = true;
+                    // Start the countdown timer for resending the code.
+                    startCountdown(RESEND_TIMER_SECONDS);
                 }
             })
             .catch(error => {
                 console.error('Error sending verification:', error);
-                sendBtn.disabled = false;
                 spinner.style.display = 'none';
             });
-    });
-
-    function startCountdown(seconds) {
-        let counter = seconds;
-        countdownSpan.textContent = ` (Resend in ${counter}s)`;
-        const interval = setInterval(() => {
-            counter--;
-            countdownSpan.textContent = ` (Resend in ${counter}s)`;
-            if (counter <= 0) {
-                clearInterval(interval);
-                countdownSpan.textContent = '';
-                sendBtn.disabled = false;
-            }
-        }, 1000);
     }
 
-    document.getElementById('registerForm').addEventListener('submit', function (e) {
-        e.preventDefault(); // Prevent the default form reload
+    // Handler for the "Resend Verification" button.
+    resendBtn.addEventListener('click', function () {
+        sendVerification();
+    });
+
+    // Form submission event
+    registerForm.addEventListener('submit', function (e) {
+        e.preventDefault(); // Prevent default form submission behavior
+
+        // If the verification code has not been sent yet, send it.
+        if (!verificationSent) {
+            // Basic check for required fields
+            const name = document.getElementById('name').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value.trim();
+            if (!name || !email || !password) {
+                alert("Please fill in all required fields.");
+                return;
+            }
+            // Send the verification code.
+            sendVerification();
+            // Set the flag so that on subsequent submissions, we actually try to register.
+            verificationSent = true;
+            // Note: The register button remains disabled until the user enters a code.
+            return;
+        }
+
+        // At this point, the verification code should be provided.
+        if (verificationCodeInput.value.trim() === "") {
+            alert("Please enter the verification code.");
+            return;
+        }
+
+        // Prepare the form data
         const formData = {
             name: document.getElementById('name').value,
-            // Convert email to lower-case before sending
             email: document.getElementById('email').value.toLowerCase(),
             password: document.getElementById('password').value,
-            verificationCode: document.getElementById('verificationCode').value
+            verificationCode: verificationCodeInput.value.trim()
         };
 
+        // Call the registration API
         fetch('/auth/api/register', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },

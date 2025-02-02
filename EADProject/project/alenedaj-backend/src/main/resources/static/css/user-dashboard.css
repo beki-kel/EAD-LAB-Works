@@ -45,12 +45,14 @@ h3 {
 }
 
 .stations-container {
-    display: flex;
-    flex-wrap: wrap;
+    display: grid;
     gap: 20px;
+    padding: 20px;
 }
 
+
 .station-card {
+    grid-column: span 3;
     background: rgb(33, 40, 56);
     border-radius: 16px;
     box-shadow: 0 4px 30px rgba(0, 0, 0, 0.4);
