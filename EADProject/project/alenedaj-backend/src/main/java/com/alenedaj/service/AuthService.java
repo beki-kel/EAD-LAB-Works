@@ -21,6 +21,7 @@ import java.util.Set;
 
 @Service
 public class AuthService {
+
     @Autowired
     private UserRepository userRepository;
 
@@ -38,7 +39,10 @@ public class AuthService {
 
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
-     // Sends a verification code to the provided email.
+    /**
+     * Sends a verification code to the provided email.
+     * Checks if the email is already registered.
+     */
     public void sendVerificationCode(String email) throws MessagingException {
         // Check if user already exists
         if (userRepository.findByEmail(email).isPresent()) {
@@ -68,7 +72,10 @@ public class AuthService {
         emailUtil.sendEmail(email, "Email Verification Code", code);
     }
 
-    //Registers a new user.
+    /**
+     * Registers a new user.
+     * Checks if the user already exists and validates the verification code.
+     */
     public String register(UserDTO userDTO) {
         String email = userDTO.getEmail();
 
@@ -101,11 +108,16 @@ public class AuthService {
         user.setRoles(roles);
 
         userRepository.save(user);
+        // Delete the used verification code
         verificationCodeRepository.delete(storedCode);
+
+        // Generate and return a JWT token with the user's role
         return jwtUtil.generateToken(email, roles);
     }
 
-    //Authenticates a user and returns a JWT token
+    /**
+     * Authenticates a user and returns a JWT token.
+     */
     public String login(LoginDTO loginDTO) {
         User user = userRepository.findByEmail(loginDTO.getEmail())
                 .orElseThrow(() -> new RuntimeException("User not found"));

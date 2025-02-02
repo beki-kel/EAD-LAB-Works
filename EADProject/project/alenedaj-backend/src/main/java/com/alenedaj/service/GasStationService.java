@@ -10,7 +10,10 @@ import com.alenedaj.utils.MapboxUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -53,7 +56,7 @@ public class GasStationService {
         return dto;
     }
 
-    // Add Gas Station
+    // ✅ Add Gas Station
     public GasStationDTO addGasStation(GasStationDTO gasStationDTO) {
         if (gasStationRepository.findByName(gasStationDTO.getName()).isPresent()) {
             throw new RuntimeException("A gas station with this name already exists!");
@@ -67,7 +70,7 @@ public class GasStationService {
         return mapToDTO(savedStation);
     }
 
-    // Update Gas Station (Uses ObjectId)
+    // ✅ Update Gas Station (Uses ObjectId)
     public GasStationDTO updateGasStation(String id, GasStationDTO updatedStation) {
         GasStation station = gasStationRepository.findById(new ObjectId(id))
                 .orElseThrow(() -> new RuntimeException("Gas station not found"));
@@ -87,7 +90,7 @@ public class GasStationService {
         return mapToDTO(station);
     }
 
-    // Delete Gas Station (Uses ObjectId)
+    // ✅ Delete Gas Station (Uses ObjectId)
     public void deleteGasStation(String id) {
         if (!gasStationRepository.existsById(new ObjectId(id))) {
             throw new RuntimeException("Gas station not found");
@@ -109,8 +112,20 @@ public class GasStationService {
         );
     }
 
-    // update Traffic Level
+    // ✅ Get Driving Directions
+    public String getDirectionsToStation(String stationId, double userLat, double userLon) {
+        GasStation station = gasStationRepository.findById(new ObjectId(stationId))
+                .orElseThrow(() -> new RuntimeException("Gas station not found"));
+
+        return mapboxUtil.getDirections(
+                userLon + "," + userLat,
+                station.getLongitude() + "," + station.getLatitude()
+        );
+    }
+
+    // ✅ Update Traffic Level
     public GasStationDTO updateTrafficLevel(String id, String trafficLevel) {
+        // If the id contains extra information (e.g., "id - name"), split and use the first part.
         if (id.contains(" - ")) {
             id = id.split(" - ")[0];
         }
@@ -122,10 +137,13 @@ public class GasStationService {
         return mapToDTO(station);
     }
 
-    // Get All Gas Stations (Return DTO list with id added in service)
+    // ✅ Get All Gas Stations (Return DTO list with id added in service)
     public List<GasStationDTO> getAllGasStations() {
         return gasStationRepository.findAll().stream().map(gasStation -> {
             GasStationDTO dto = mapToDTO(gasStation);
+            // Here, since the DTO doesn't have an "id" field, we can append it to the name,
+            // or—if you prefer not to alter the name—you can simply set a custom property via a wrapper.
+            // For illustration, we append the id to the DTO's name.
             dto.setName(gasStation.getId().toHexString() + " - " + dto.getName());
 
             return dto;

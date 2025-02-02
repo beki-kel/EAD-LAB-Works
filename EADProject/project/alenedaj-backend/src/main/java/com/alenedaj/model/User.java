@@ -1,8 +1,6 @@
 package com.alenedaj.model;
 
 
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -23,9 +21,7 @@ public class User {
     @Field("_id")
     private ObjectId id;
     private String name;
-    @NotNull
     private String email;
-    @Size(min = 6, message = "Password must be at least 6 characters")
     private String password;
     private Set<String> roles;
 
