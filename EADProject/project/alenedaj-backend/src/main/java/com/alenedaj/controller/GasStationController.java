@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/admin")
+@RequestMapping("/api")
 public class GasStationController {
 
     private static final Logger logger = LoggerFactory.getLogger(GasStationController.class);
@@ -24,7 +24,7 @@ public class GasStationController {
     }
 
     // Admin: Add a new gas station (Uses location name)
-    @PostMapping("/gas-stations")
+    @PostMapping("/admin/gas-stations")
     public ResponseEntity<GasStationDTO> addGasStation(@Valid @RequestBody GasStationDTO gasStationDTO) {
         logger.info("Adding gas station {}", gasStationDTO.getName());
         GasStationDTO result = gasStationService.addGasStation(gasStationDTO);
@@ -32,7 +32,7 @@ public class GasStationController {
     }
 
     // Admin: Update gas station (Allows updating location)
-    @PutMapping("/gas-stations/{id}")
+    @PutMapping("/admin/gas-stations/{id}")
     public ResponseEntity<GasStationDTO> updateGasStation(@PathVariable String id, @Valid @RequestBody GasStationDTO gasStationDTO) {
         logger.info("Updating gas station with id {}", id);
         GasStationDTO result = gasStationService.updateGasStation(id, gasStationDTO);
@@ -40,7 +40,7 @@ public class GasStationController {
     }
 
     // Admin: Delete gas station
-    @DeleteMapping("/gas-stations/{id}")
+    @DeleteMapping("/admin/gas-stations/{id}")
     public ResponseEntity<String> deleteGasStation(@PathVariable String id) {
         logger.info("Deleting gas station with id {}", id);
         gasStationService.deleteGasStation(id);
@@ -57,7 +57,7 @@ public class GasStationController {
     }
 
     // User: Get driving directions to a gas station
-    @GetMapping("/gas-stations/directions/{id}")
+    @GetMapping("/admin/gas-stations/directions/{id}")
     public ResponseEntity<String> getDirectionsToStation(@PathVariable String id,
                                                          @RequestParam double userLat,
                                                          @RequestParam double userLon) {
@@ -69,9 +69,9 @@ public class GasStationController {
     // User: Update traffic level manually via the frontend GUI
     @PutMapping("/gas-stations/update-traffic/{id}")
     public ResponseEntity<GasStationDTO> updateTrafficLevel(@PathVariable String id,
-                                                            @RequestBody String trafficLevel) {
-        logger.info("Updating traffic level for station {}: {}", id, trafficLevel);
-        GasStationDTO updated = gasStationService.updateTrafficLevel(id, trafficLevel);
+                                                            @RequestBody GasStationDTO gasStationDTO) {
+        logger.info("Updating traffic level for station {}: {}", id, gasStationDTO.getTrafficLevel());
+        GasStationDTO updated = gasStationService.updateTrafficLevel(id, gasStationDTO.getTrafficLevel());
         return ResponseEntity.ok(updated);
     }
 
