@@ -125,6 +125,10 @@ public class GasStationService {
 
     // ✅ Update Traffic Level
     public GasStationDTO updateTrafficLevel(String id, String trafficLevel) {
+        // If the id contains extra information (e.g., "id - name"), split and use the first part.
+        if (id.contains(" - ")) {
+            id = id.split(" - ")[0];
+        }
         GasStation station = gasStationRepository.findById(new ObjectId(id))
                 .orElseThrow(() -> new RuntimeException("Gas station not found"));
 
