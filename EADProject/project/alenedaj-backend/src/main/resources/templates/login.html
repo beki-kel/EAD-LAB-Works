@@ -1,97 +1,87 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-  <head>
-    <meta charset="UTF-8" />
+<head>
+    <meta charset="UTF-8">
     <title>Login - aleNedaj</title>
-    <link rel="stylesheet" th:href="@{/css/style.css}" />
-    <link rel="stylesheet" th:href="@{/css/login.css}" />
-  </head>
-  <body>
-    <div class="container">
-      <header>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/login.css}">
+</head>
+<body>
+<div class="container">
+    <header>
         <div class="logo_container">
-          <img src="/images/logo-2.png" alt="" />
-          <img src="/images/logo_text2.png" alt="" />
+            <img src="/images/logo-2.png" alt="">
+            <img src="/images/logo_text2.png" alt="">
         </div>
-      </header>
-      <section class="form-section">
+    </header>
+    <section class="form-section">
         <h2 id="loginTitle">Sign in</h2>
         <form id="loginForm">
-          <div class="inputs">
-            <label for="email">Email:</label>
-            <input type="email" id="email" name="email" required />
-          </div>
-          <div class="inputs">
-            <label for="password">Password:</label>
-            <input type="password" id="password" name="password" required />
-          </div>
-          <button type="submit" class="button" id="loginBtn">
-            <span id="btnText">Login</span>
-            <span id="spinner" class="spinner" style="display: none"></span>
-          </button>
+            <div class="inputs">
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" required />
+            </div>
+            <div class="inputs">
+                <label for="password">Password:</label>
+                <input type="password" id="password" name="password" required />
+            </div>
+            <button type="submit" class="button" id="loginBtn">
+                <span id="btnText">Login</span>
+                <span id="spinner" class="spinner" style="display:none;"></span>
+            </button>
         </form>
-        <p style="text-align: center; margin-top: 15px">
-          Don't have an account?
-          <a href="/auth/register" class="register">Register here</a>.
+        <p style="text-align: center; margin-top: 15px;">
+            Don't have an account? <a href="/auth/register" class="register">Register here</a>.
         </p>
-      </section>
-    </div>
+    </section>
+</div>
 
-    <script>
-      document
-        .getElementById("loginForm")
-        .addEventListener("submit", function (event) {
-          event.preventDefault();
+<script>
+    document.getElementById('loginForm').addEventListener('submit', function (event) {
+        event.preventDefault();
 
-          const loginBtn = document.getElementById("loginBtn");
-          const btnText = document.getElementById("btnText");
-          const spinner = document.getElementById("spinner");
+        const loginBtn = document.getElementById('loginBtn');
+        const btnText = document.getElementById('btnText');
+        const spinner = document.getElementById('spinner');
 
-          loginBtn.disabled = true;
-          btnText.style.display = "none";
-          spinner.style.display = "inline-block";
+        loginBtn.disabled = true;
+        btnText.style.display = 'none';
+        spinner.style.display = 'inline-block';
 
-          const formData = {
-            email: document.getElementById("email").value.toLowerCase(),
-            password: document.getElementById("password").value,
-          };
+        const formData = {
+            email: document.getElementById('email').value.toLowerCase(),
+            password: document.getElementById('password').value
+        };
 
-          fetch("/auth/api/login", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(formData),
-          })
-            .then((response) =>
-              response
-                .json()
-                .then((data) => ({ status: response.status, body: data }))
-            )
+        fetch('/auth/api/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(formData)
+        })
+            .then(response => response.json().then(data => ({ status: response.status, body: data })))
             .then(({ status, body }) => {
-              if (status >= 400) {
-                alert("Login error: " + body.error);
-              } else if (body.role && body.token) {
-                // Store the JWT in localStorage
-                localStorage.setItem("jwt", body.token);
-                alert(body.message);
-                if (body.role.toLowerCase() === "admin") {
-                  window.location.href = "/admin/dashboard";
+                if (status >= 400) {
+                    alert("Login error: " + body.error);
+                } else if (body.role) {
+                    if (body.role.toLowerCase() === 'admin') {
+                        window.location.href = '/admin/dashboard';
+                    } else {
+                        window.location.href = '/user/dashboard';
+                    }
                 } else {
-                  window.location.href = "/user/dashboard";
+                    throw new Error('Role not found in response.');
                 }
-              } else {
-                throw new Error("Role or token not found in response.");
-              }
             })
-            .catch((error) => {
-              console.error("Login error:", error);
-              alert("Login error: " + error.message);
+            .catch(error => {
+                console.error('Login error:', error);
+                alert('Login error: ' + error.message);
             })
             .finally(() => {
-              loginBtn.disabled = false;
-              btnText.style.display = "inline";
-              spinner.style.display = "none";
+                loginBtn.disabled = false;
+                btnText.style.display = 'inline';
+                spinner.style.display = 'none';
             });
-        });
-    </script>
-  </body>
+    });
+</script>
+</body>
 </html>

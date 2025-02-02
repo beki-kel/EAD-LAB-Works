@@ -83,8 +83,4 @@ public class User {
     public void setLongitude(Double longitude) {
         this.longitude = longitude;
     }
-
-    public ObjectId getId() {
-        return id;
-    }
 }

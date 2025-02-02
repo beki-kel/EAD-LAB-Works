@@ -1,558 +1,353 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-  <head>
-    <meta charset="UTF-8" />
+<head>
+    <meta charset="UTF-8">
     <title>User Dashboard - ale nedaj</title>
-    <link rel="stylesheet" th:href="@{/css/style.css}" />
-    <link rel="stylesheet" th:href="@{/css/user-dashboard.css}" />
-    <link rel="stylesheet" th:href="@{/css/dashboard.css}" />
-    <!-- Font Awesome for icons -->
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-    />
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <link rel="stylesheet" th:href="@{/css/user-dashboard.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-      /* Inline styles to ensure full-height and sidebar layout */
-      body,
-      html {
-        margin: 0;
-        padding: 0;
-        height: 100%;
-      }
-      .dashboard-container {
-        display: flex;
-        flex-direction: row;
-        height: 100%;
-      }
-      .sidebar {
-        width: 250px;
-        flex-shrink: 0;
-        background: #2c3e50;
-        color: #ecf0f1;
-        padding: 20px;
-        box-sizing: border-box;
-        min-height: 100%;
-      }
-      .main-content {
-        flex-grow: 1;
-        padding: 20px;
-        background: #f7f7f7;
-        box-sizing: border-box;
-        overflow-y: auto;
-      }
-      /* Global loading indicator */
-      #globalLoading {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        background: #2980b9;
-        color: #fff;
-        text-align: center;
-        padding: 5px;
-        display: none;
-        z-index: 1000;
-      }
+        #globalLoading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background: #2980b9;
+            color: #fff;
+            text-align: center;
+            padding: 5px;
+            display: none;
+            z-index: 1000;
+        }
     </style>
-  </head>
-  <body>
-    <!-- Global Loading Indicator -->
-    <div id="globalLoading">Loading...</div>
+</head>
+<body>
+<div id="globalLoading">Loading...</div>
 
-    <div class="dashboard-container">
-      <!-- Sidebar -->
-      <nav class="sidebar">
+<div class="dashboard-container">
+    <nav class="sidebar">
         <div class="logo">
-          <h2>ale nedaj</h2>
-        </div>
-        <div class="user-info">
-          <p>Welcome, <strong id="userName">Loading...</strong></p>
+            <picture>
+                <source media="(max-width: 768px)" srcset="/images/logo_text2.png">
+                <source media="(min-width: 769px)" srcset="/images/logo_with_text-2.png">
+                <img src="/images/logo_with_text-2.png" width="150" alt="Logo with Text">
+            </picture>
         </div>
         <ul class="nav-list">
-          <li class="active" data-tab="tab-search">
-            <i class="fa fa-search"></i> Search Stations
-          </li>
-          <li data-tab="tab-updateTraffic">
-            <i class="fa fa-edit"></i> Update Traffic
-          </li>
-          <li data-tab="tab-userInfo"><i class="fa fa-user"></i> User Info</li>
-          <li data-tab="tab-logout">
-            <i class="fa fa-sign-out-alt"></i> Logout
-          </li>
+            <li class="active" data-tab="tab-home"><i class="fa fa-home"></i> Home</li>
+            <li data-tab="tab-location"><i class="fa fa-map-marker-alt"></i> My Location</li>
+            <li data-tab="tab-stations"><i class="fa fa-gas-pump"></i> Gas Stations</li>
         </ul>
-      </nav>
+    </nav>
 
-      <!-- Main Content -->
-      <div class="main-content">
+    <div class="main-content">
+        <header class="user-header">
+            <h1>User Dashboard</h1>
+            <button id="logoutBtn" class=" logout-btn"><i class="fa fa-sign-out-alt"></i></button>
+        </header>
+        <input type="hidden" id="userId" value="PUT_USER_ID_HERE">
+
         <div class="tabs">
-          <!-- Tab: Search Stations -->
-          <div class="tab-content active" id="tab-search">
-            <h2>Search Nearby Gas Stations</h2>
-            <!-- Update User Location Form -->
-            <form id="updateLocationForm">
-              <label for="userLocationSearch">Your Location:</label>
-              <div class="location-search-container">
-                <input
-                  type="text"
-                  id="userLocationSearch"
-                  placeholder="e.g., Addis Ababa, Ethiopia"
-                  required
-                />
-                <button type="button" id="userLocateBtn" class="button">
-                  <i class="fa fa-search"></i> Locate
-                </button>
-              </div>
-              <div id="userLocationDisplay" class="location-display"></div>
-              <!-- Hidden fields for user's location -->
-              <input type="hidden" id="userLatitude" name="userLatitude" />
-              <input type="hidden" id="userLongitude" name="userLongitude" />
-              <input type="hidden" id="userLocation" name="userLocation" />
-              <button type="submit" class="button">Update My Location</button>
-            </form>
-            <!-- Gas Stations Container -->
-            <div id="stationsContainer" class="stations-container">
-              <div
-                id="noStationsMessage"
-                style="
-                  display: none;
-                  text-align: center;
-                  margin-top: 20px;
-                  font-size: 1.2rem;
-                  color: #555;
-                "
-              >
-                No gas station to display.
-              </div>
+            <div class="tab-content active" id="tab-home">
+                <h2>Welcome!</h2>
+                <p>Use the "My Location" tab to update your current location. Your location is used to calculate the distance to nearby gas stations.</p>
+                <p>Then, visit the "Gas Stations" tab to view details about each station, including the distance from your location. You can also update the traffic level for any station.</p>
             </div>
-          </div>
 
-          <!-- Tab: Update Traffic -->
-          <div class="tab-content" id="tab-updateTraffic">
-            <h2>Update Traffic Level for a Station</h2>
-            <form id="updateTrafficForm">
-              <label for="stationIdTraffic">Station ID:</label>
-              <input
-                type="text"
-                id="stationIdTraffic"
-                name="stationId"
-                required
-              />
-
-              <label for="stationNameTraffic">Station Name:</label>
-              <input
-                type="text"
-                id="stationNameTraffic"
-                name="stationName"
-                required
-              />
-
-              <label for="stationLocationTraffic">Station Location:</label>
-              <input
-                type="text"
-                id="stationLocationTraffic"
-                name="stationLocation"
-                required
-              />
-
-              <label for="newTraffic">New Traffic Level:</label>
-              <select id="newTraffic" name="newTraffic" required>
-                <option value="">-- Select Traffic Level --</option>
-                <option value="Low">Low</option>
-                <option value="Medium">Medium</option>
-                <option value="High">High</option>
-                <option value="Undefined">Undefined</option>
-              </select>
-              <button type="submit" class="button">
-                <i class="fa fa-edit"></i> Update Traffic
-              </button>
-            </form>
-          </div>
-
-          <!-- Tab: User Info -->
-          <div class="tab-content" id="tab-userInfo">
-            <h2>User Information</h2>
-            <div id="userInfoContainer">
-              <p>
-                <strong>Name:</strong>
-                <span id="displayUserName">Loading...</span>
-              </p>
-              <p>
-                <strong>Email:</strong>
-                <span id="displayUserEmail">Loading...</span>
-              </p>
+            <div class="tab-content" id="tab-location">
+                <h2>Update My Location</h2>
+                <form id="updateLocationForm">
+                    <label for="userLocationSearch">Enter Your Location:</label>
+                    <div class="location-search-container">
+                        <input type="text" id="userLocationSearch" placeholder="e.g., Addis Ababa, Ethiopia" required>
+                        <button type="button" id="userLocateBtn" id="searchButton"><i class="fa fa-search"></i></button>
+                    </div>
+                    <div id="userLocationDisplay" class="location-display"></div>
+                    <input type="hidden" id="userLatitude" name="userLatitude">
+                    <input type="hidden" id="userLongitude" name="userLongitude">
+                    <input type="hidden" id="userLocation" name="userLocation">
+                    <button type="submit" class="button">Update My Location</button>
+                </form>
             </div>
-          </div>
 
-          <!-- Tab: Logout -->
-          <div class="tab-content" id="tab-logout">
-            <h2>Logging Out...</h2>
-          </div>
+            <div class="tab-content" id="tab-stations">
+                <h2>Nearby Gas Stations</h2>
+                <div id="stationsContainer" class="stations-container">
+                </div>
+            </div>
         </div>
-      </div>
     </div>
+</div>
 
-    <!-- Hidden field for current user id (populated via API call) -->
-    <input type="hidden" id="userId" value="" />
+<script>
+    function showLoading() {
+        document.getElementById('globalLoading').style.display = 'block';
+    }
+    function hideLoading() {
+        document.getElementById('globalLoading').style.display = 'none';
+    }
 
-    <!-- JavaScript Section -->
-    <script>
-      // --- Global Loading Indicator Functions ---
-      function showLoading() {
-        const loadingEl = document.getElementById("globalLoading");
-        if (loadingEl) {
-          loadingEl.style.display = "block";
-        }
-      }
-      function hideLoading() {
-        const loadingEl = document.getElementById("globalLoading");
-        if (loadingEl) {
-          loadingEl.style.display = "none";
-        }
-      }
-
-      // --- Tab Switching Logic ---
-      const navItems = document.querySelectorAll(".nav-list li");
-      const tabContents = document.querySelectorAll(".tab-content");
-      navItems.forEach((item) => {
-        item.addEventListener("click", () => {
-          navItems.forEach((i) => i.classList.remove("active"));
-          item.classList.add("active");
-          const tabId = item.getAttribute("data-tab");
-          tabContents.forEach((tab) => {
-            tab.classList.remove("active");
-            if (tab.id === tabId) {
-              tab.classList.add("active");
-            }
-          });
-          if (item.getAttribute("data-tab") === "tab-logout") {
-            performLogout();
-          }
+    const navItems = document.querySelectorAll('.nav-list li');
+    const tabContents = document.querySelectorAll('.tab-content');
+    navItems.forEach(item => {
+        item.addEventListener('click', () => {
+            navItems.forEach(i => i.classList.remove('active'));
+            item.classList.add('active');
+            const tabId = item.getAttribute('data-tab');
+            tabContents.forEach(tab => {
+                tab.classList.remove('active');
+                if (tab.id === tabId) {
+                    tab.classList.add('active');
+                }
+            });
         });
-      });
+    });
 
-      // --- Logout ---
-      function performLogout() {
+    document.getElementById('logoutBtn').addEventListener('click', function() {
         showLoading();
-        fetch("/auth/api/logout", { method: "POST" })
-          .then((res) => res.text())
-          .then((data) => {
-            alert("Logged out successfully!");
-            hideLoading();
-            localStorage.removeItem("jwt");
-            window.location.href = "/auth/login";
-          })
-          .catch((err) => {
-            alert("Error during logout: " + err);
-            hideLoading();
-          });
-      }
-      const logoutBtn = document.getElementById("logoutBtn");
-      if (logoutBtn) {
-        logoutBtn.addEventListener("click", performLogout);
-      }
+        fetch('/auth/api/logout', { method: 'POST' })
+            .then(res => res.text())
+            .then(data => {
+                alert("Logged out successfully!");
+                hideLoading();
+                window.location.href = '/auth/login';
+            })
+            .catch(err => {
+                alert("Error during logout: " + err);
+                hideLoading();
+            });
+    });
 
-      // --- JWT Decoding and User Info Loading from localStorage ---
-      function getJwt() {
-        return localStorage.getItem("jwt");
-      }
-      function decodeJwt(token) {
-        try {
-          const payload = token.split(".")[1];
-          const decodedPayload = atob(
-            payload.replace(/-/g, "+").replace(/_/g, "/")
-          );
-          return JSON.parse(decodedPayload);
-        } catch (err) {
-          console.error("Error decoding JWT:", err);
-          return null;
-        }
-      }
-      window.addEventListener("load", function () {
-        const jwt = getJwt();
-        if (!jwt) {
-          window.location.href = "/auth/login";
-          return;
-        }
-        const payload = decodeJwt(jwt);
-        if (!payload || !payload.sub) {
-          window.location.href = "/auth/login";
-          return;
-        }
-        const userEmail = payload.sub;
-        showLoading();
-        fetch("/auth/api/user-info?email=" + encodeURIComponent(userEmail))
-          .then((res) => res.json())
-          .then((data) => {
-            hideLoading();
-            document.getElementById("userId").value = data.id;
-            document.getElementById("userName").textContent =
-              data.name || userEmail;
-            document.getElementById("displayUserName").textContent =
-              data.name || userEmail;
-            document.getElementById("displayUserEmail").textContent =
-              data.email || userEmail;
-          })
-          .catch((err) => {
-            hideLoading();
-            console.error("Error fetching user info:", err);
-          });
-      });
-
-      // --- Update User Location ---
-      const userLocateBtn = document.getElementById("userLocateBtn");
-      userLocateBtn.addEventListener("click", function () {
-        const searchQuery = document.getElementById("userLocationSearch").value;
+    const userLocateBtn = document.getElementById('userLocateBtn');
+    userLocateBtn.addEventListener('click', function() {
+        const searchQuery = document.getElementById('userLocationSearch').value;
         if (!searchQuery) {
-          alert("Please enter your location.");
-          return;
+            alert("Please enter your location.");
+            return;
         }
         showLoading();
-        fetch(
-          "https://nominatim.openstreetmap.org/search?format=json&q=" +
-            encodeURIComponent(searchQuery)
-        )
-          .then((res) => res.json())
-          .then((data) => {
-            hideLoading();
-            if (data.length > 0) {
-              const result = data[0];
-              document.getElementById("userLocationSearch").value =
-                result.display_name;
-              document.getElementById("userLatitude").value = result.lat;
-              document.getElementById("userLongitude").value = result.lon;
-              document.getElementById("userLocation").value =
-                result.display_name;
-              document.getElementById("userLocationDisplay").textContent =
-                "Location Found: " + result.display_name;
-            } else {
-              alert("No location found. Please try again.");
-            }
-          })
-          .catch((err) => {
-            hideLoading();
-            alert("Error fetching location: " + err);
-          });
-      });
+        fetch('https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(searchQuery))
+            .then(res => res.json())
+            .then(data => {
+                hideLoading();
+                if (data.length > 0) {
+                    const result = data[0];
+                    document.getElementById('userLocationSearch').value = result.display_name;
+                    document.getElementById('userLatitude').value = result.lat;
+                    document.getElementById('userLongitude').value = result.lon;
+                    document.getElementById('userLocation').value = result.display_name;
+                    document.getElementById('userLocationDisplay').textContent = "Location Found: " + result.display_name;
+                } else {
+                    alert("No location found. Please try again.");
+                }
+            })
+            .catch(err => {
+                hideLoading();
+                alert("Error fetching location: " + err);
+            });
+    });
 
-      // --- Submit Update User Location Form ---
-      document
-        .getElementById("updateLocationForm")
-        .addEventListener("submit", function (e) {
-          e.preventDefault();
-          if (
-            !document.getElementById("userLatitude").value ||
-            !document.getElementById("userLongitude").value ||
-            !document.getElementById("userLocation").value
-          ) {
+    document.getElementById('updateLocationForm')?.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const userId = document.getElementById('userId').value;
+        if (!document.getElementById('userLatitude').value || !document.getElementById('userLongitude').value || !document.getElementById('userLocation').value) {
             alert("Please locate a valid location first.");
             return;
-          }
-          const userId = document.getElementById("userId").value;
-          const location = document.getElementById("userLocation").value;
-          showLoading();
-          fetch("/auth/api/update-location/" + userId, {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(location),
-          })
-            .then((res) => res.json())
-            .then((data) => {
-              alert(data.message);
-              hideLoading();
-              loadStations();
-            })
-            .catch((err) => {
-              alert("Error updating location: " + err);
-              hideLoading();
-            });
-        });
-
-      // --- Load Gas Stations and Render as Cards ---
-      function loadStations() {
+        }
+        const location = document.getElementById('userLocation').value;
         showLoading();
-        fetch("/api/gas-stations")
-          .then((res) => res.json())
-          .then((data) => {
-            const container = document.getElementById("stationsContainer");
-            container.innerHTML = "";
-
-            const noStationsMessage =
-              document.getElementById("noStationsMessage");
-            if (!data || data.length === 0) {
-              if (noStationsMessage) {
-                noStationsMessage.style.display = "block";
-              }
-              hideLoading();
-              return;
-            } else {
-              if (noStationsMessage) {
-                noStationsMessage.style.display = "none";
-              }
-            }
-
-            const userId = document.getElementById("userId").value;
-
-            let stationPromises = data.map((station) => {
-              let stationId, stationName;
-              if (station.name && station.name.includes(" - ")) {
-                let parts = station.name.split(" - ");
-                stationId = parts[0];
-                stationName = parts.slice(1).join(" - ");
-              } else {
-                stationId = "-";
-                stationName = station.name || "-";
-              }
-              return fetch(`/api/gas-stations/distance/${userId}/${stationId}`)
-                .then((res) => res.json())
-                .then((distance) => ({
-                  ...station,
-                  stationId,
-                  stationName,
-                  distance:
-                    typeof distance === "number"
-                      ? distance
-                      : Number.NEGATIVE_INFINITY,
-                }))
-                .catch((err) => ({
-                  ...station,
-                  stationId,
-                  stationName,
-                  distance: Number.NEGATIVE_INFINITY,
-                }));
+        fetch('/auth/api/update-location/' + userId, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(location)
+        })
+            .then(res => res.json())
+            .then(data => {
+                alert(data.message);
+                hideLoading();
+                loadStations();
+            })
+            .catch(err => {
+                alert("Error updating location: " + err);
+                hideLoading();
             });
+    });
 
-            Promise.all(stationPromises).then((stations) => {
-              stations.sort((a, b) => b.distance - a.distance);
-              stations.forEach((station) => {
-                let availability = station.fuelAvailable ? "Yes" : "No";
-                const traffic =
-                  station.trafficLevel && station.trafficLevel !== "UNDEFINED"
-                    ? station.trafficLevel
-                    : "-";
-                const distanceText =
-                  station.distance !== Number.NEGATIVE_INFINITY
-                    ? `Distance: ${station.distance.toFixed(2)} km`
-                    : "Distance unavailable";
+    function loadStations() {
+        showLoading();
+        fetch('/api/admin/gas-stations')
+            .then(res => res.json())
+            .then(data => {
+                const container = document.getElementById('stationsContainer');
+                container.innerHTML = '';
+                const userId = document.getElementById('userId').value;
+                data.forEach(station => {
+                    let stationId, stationName;
+                    if (station.id) {
+                        stationId = station.id;
+                        stationName = station.name;
+                    } else if (station.name && station.name.includes(" - ")) {
+                        let parts = station.name.split(" - ");
+                        stationId = parts[0];
+                        stationName = parts.slice(1).join(" - ");
+                    } else {
+                        stationId = '-';
+                        stationName = station.name;
+                    }
+                    let availability = (typeof station.fuelAvailable === "boolean")
+                        ? (station.fuelAvailable ? "Yes" : "No")
+                        : "-";
+                    const traffic = station.trafficLevel ? station.trafficLevel : "-";
 
-                const card = document.createElement("div");
-                card.className = "station-card";
-                card.style.position = "relative";
+                    const card = document.createElement('div');
+                    card.className = 'station-card';
+                    const distanceContainer = document.createElement('div');
+                    distanceContainer.className = 'distance-container';
+                    distanceContainer.id = 'distance-' + stationId;
 
-                // Card with update traffic button only
-                card.innerHTML = `
-                            <div class="card-actions" style="position:absolute; top:10px; right:10px;">
-                                <button class="action-btn" onclick="updateTrafficPrompt('${
-                                  station.stationId
-                                }')"><i class="fa fa-edit"></i></button>
-                            </div>
-                            <h3>${station.stationName}</h3>
-                            <p><strong>ID:</strong> ${station.stationId}</p>
-                            <p><strong>Location:</strong> ${
-                              station.location || "-"
-                            }</p>
-                            <p><strong>Availability:</strong> ${availability}</p>
-                            <p><strong>Traffic:</strong> ${traffic}</p>
-                            <p id="distance-${
-                              station.stationId
-                            }">${distanceText}</p>
-                        `;
-
-                container.appendChild(card);
-              });
-              hideLoading();
+                    card.innerHTML = `
+              <div class="card-actions" style="position:absolute; top:10px; right:10px;">
+                <button class="action-btn" onclick="updateTrafficPrompt('${stationId}')"><i class="fa fa-edit"></i></button>
+                <button class="action-btn" onclick="deleteStation('${stationId}')"><i class="fa fa-trash"></i></button>
+              </div>
+              <h3>${stationName}</h3>
+              <p><strong>ID:</strong> ${stationId}</p>
+              <p><strong>Location:</strong> ${station.location}</p>
+              <p><strong>Availability:</strong> ${availability}</p>
+              <p><strong>Traffic:</strong> ${traffic}</p>
+            `;
+                    const distanceBtn = document.createElement('button');
+                    distanceBtn.className = 'button distance-btn';
+                    distanceBtn.innerHTML = '<i class="fa fa-road"></i> Calculate Distance';
+                    distanceBtn.onclick = function() {
+                        calculateDistance(userId, stationId);
+                    };
+                    card.appendChild(distanceBtn);
+                    card.appendChild(distanceContainer);
+                    container.appendChild(card);
+                });
+                hideLoading();
+            })
+            .catch(err => {
+                alert("Error loading stations: " + err);
+                hideLoading();
             });
-          })
-          .catch((err) => {
-            alert("Error loading stations: " + err);
-            hideLoading();
-          });
-      }
+    }
+    loadStations();
 
-      // --- Calculate Distance for a Station ---
-      function calculateDistance(userId, stationId) {
+    function calculateDistance(userId, stationId) {
         showLoading();
         fetch(`/api/admin/gas-stations/distance/${userId}/${stationId}`)
-          .then((res) => res.json())
-          .then((distance) => {
-            hideLoading();
-            const distElem = document.getElementById("distance-" + stationId);
-            if (distElem) {
-              distElem.textContent = "Distance: " + distance.toFixed(2) + " km";
-            }
-          })
-          .catch((err) => {
-            alert("Error calculating distance: " + err);
-            hideLoading();
-          });
-      }
-
-      // --- Update Traffic via Prompt from Card ---
-      function updateTrafficPrompt(id) {
-        const newTraffic = prompt(
-          "Enter new traffic level (Low, Medium, High, Undefined):"
-        );
-        if (newTraffic) {
-          showLoading();
-          fetch("/api/admin/gas-stations/update-traffic/" + id, {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(newTraffic),
-          })
-            .then((res) => res.json())
-            .then((data) => {
-              alert("Traffic updated successfully!");
-              hideLoading();
-              loadStations();
+            .then(res => res.json())
+            .then(distance => {
+                hideLoading();
+                const distElem = document.getElementById('distance-' + stationId);
+                distElem.textContent = "Distance: " + distance.toFixed(2) + " km";
             })
-            .catch((err) => {
-              alert("Error updating traffic: " + err);
-              hideLoading();
+            .catch(err => {
+                alert("Error calculating distance: " + err);
+                hideLoading();
             });
+    }
+
+    function deleteStation(id) {
+        if (confirm("Are you sure you want to delete station: " + id + "?")) {
+            showLoading();
+            fetch('/api/admin/gas-stations/' + id, { method: 'DELETE' })
+                .then(res => res.text())
+                .then(data => {
+                    alert(data);
+                    hideLoading();
+                    loadStations();
+                })
+                .catch(err => {
+                    alert("Error deleting station: " + err);
+                    hideLoading();
+                });
         }
-      }
+    }
 
-      // --- Update Traffic Form Submission ---
-      const updateTrafficForm = document.getElementById("updateTrafficForm");
-      if (updateTrafficForm) {
-        updateTrafficForm.addEventListener("submit", function (e) {
-          e.preventDefault();
-          const stationId = document.getElementById("stationIdTraffic").value;
-          const stationName =
-            document.getElementById("stationNameTraffic").value;
-          const stationLocation = document.getElementById(
-            "stationLocationTraffic"
-          ).value;
-          const newTraffic = document.getElementById("newTraffic").value;
-          if (!stationId || !newTraffic || !stationName || !stationLocation) {
-            alert("Please fill out all fields.");
-            return;
-          }
-          const payload = {
-            trafficLevel: newTraffic,
-            name: stationName,
-            location: stationLocation,
-          };
-          showLoading();
-          fetch("/api/gas-stations/update-traffic/" + stationId, {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload),
-          })
-            .then((res) => res.json())
-            .then((data) => {
-              alert("Traffic updated successfully!");
-              hideLoading();
-              loadStations();
+    function updateTrafficPrompt(id) {
+        const newTraffic = prompt("Enter new traffic level (Low, Medium, High, Undefined):");
+        if (newTraffic) {
+            showLoading();
+            fetch('/api/admin/gas-stations/update-traffic/' + id, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(newTraffic)
             })
-            .catch((err) => {
-              alert("Error updating traffic: " + err);
-              hideLoading();
-            });
-        });
-      }
+                .then(res => res.json())
+                .then(data => {
+                    alert("Traffic updated successfully!");
+                    hideLoading();
+                    loadStations();
+                })
+                .catch(err => {
+                    alert("Error updating traffic: " + err);
+                    hideLoading();
+                });
+        }
+    }
 
-      // Optionally, call loadStations() after a successful location update or on page load.
-      loadStations();
-    </script>
-  </body>
+    document.getElementById('updateStationForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const id = document.getElementById('updateStationId').value;
+        let newLocation = document.getElementById('updateLocation').value;
+        if (!newLocation && document.getElementById('updateLocationDisplay') && document.getElementById('updateLocationDisplay').textContent) {
+            newLocation = document.getElementById('updateLocationDisplay').textContent.replace("Location Found: ", "");
+        }
+        const stationData = {
+            name: document.getElementById('updateStationName').value,
+            location: newLocation,
+            availability: document.getElementById('updateAvailability').value,
+            traffic: document.getElementById('updateTraffic').value
+        };
+        showLoading();
+        fetch('/api/admin/gas-stations/' + id, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(stationData)
+        })
+            .then(res => res.json())
+            .then(data => {
+                alert("Gas Station updated successfully!");
+                hideLoading();
+                loadStations();
+                document.getElementById('updateStationId').value = '';
+                document.getElementById('updateStationName').value = '';
+                document.getElementById('updateLocation').value = '';
+                document.getElementById('updateLocationSearch').value = '';
+                if(document.getElementById('updateLocationDisplay')) {
+                    document.getElementById('updateLocationDisplay').textContent = '';
+                }
+                document.getElementById('updateAvailability').selectedIndex = 0;
+                document.getElementById('updateTraffic').selectedIndex = 0;
+            })
+            .catch(err => {
+                alert("Error updating station: " + err);
+                hideLoading();
+            });
+    });
+
+    document.getElementById('deleteStationForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const id = document.getElementById('deleteStationId').value;
+        if (confirm("Are you sure you want to delete station: " + id + "?")) {
+            showLoading();
+            fetch('/api/admin/gas-stations/' + id, { method: 'DELETE' })
+                .then(res => res.text())
+                .then(data => {
+                    alert(data);
+                    hideLoading();
+                    loadStations();
+                })
+                .catch(err => {
+                    alert("Error deleting station: " + err);
+                    hideLoading();
+                });
+        }
+    });
+</script>
+</body>
 </html>

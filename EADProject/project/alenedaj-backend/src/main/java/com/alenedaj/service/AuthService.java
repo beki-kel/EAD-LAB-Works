@@ -138,18 +138,6 @@ public class AuthService {
         return user.getRoles().iterator().next();
     }
 
-    public java.util.Map<String, String> getUserInfo(String email) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-        // Build a map with user details. Adjust keys as desired.
-        return java.util.Map.of(
-                "id", user.getId().toHexString(),  // assuming the id is an ObjectId
-                "name", user.getName(),
-                "email", user.getEmail(),
-                "role", user.getRoles().iterator().next()
-        );
-    }
-
     /**
      * Updates the location and coordinates for the specified user.
      */
