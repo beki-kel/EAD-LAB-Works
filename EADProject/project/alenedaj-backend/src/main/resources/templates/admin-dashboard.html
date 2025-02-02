@@ -180,6 +180,8 @@
             <li data-tab="tab-list"><i class="fa fa-list"></i> List Stations</li>
             <li data-tab="tab-update"><i class="fa fa-edit"></i> Update Station</li>
             <li data-tab="tab-delete"><i class="fa fa-trash"></i> Delete Station</li>
+            <li data-tab="tab-logout"><i class="fa fa-sign-out"></i> Logout</li>
+
         </ul>
     </nav>
     <div class="main-content">
@@ -418,7 +420,7 @@
     // --- Load Stations and Render as Cards ---
     function loadStations() {
         showLoading();
-        fetch('/api/admin/gas-stations')
+        fetch('/api/gas-stations')
             .then(res => res.json())
             .then(data => {
                 const container = document.getElementById('stationsContainer');
@@ -570,6 +572,32 @@
                 });
         }
     });
+
+    // --- Logout Tab Handler ---
+    const logoutTab = document.querySelector('[data-tab="tab-logout"]');
+    if (logoutTab) {
+        logoutTab.addEventListener('click', function () {
+            if (confirm("Are you sure you want to logout?")) {
+                showLoading();
+                fetch('/auth/api/logout', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                })
+                    .then(res => res.json())
+                    .then(data => {
+                        hideLoading();
+                        alert(data.message);
+                        window.location.href = "/auth/login";
+                    })
+                    .catch(error => {
+                        hideLoading();
+                        console.error("Logout error:", error);
+                        alert("Error logging out: " + error.message);
+                    });
+            }
+        });
+    }
+
 </script>
 </body>
 </html>

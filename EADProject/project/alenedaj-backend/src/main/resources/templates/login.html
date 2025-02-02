@@ -74,10 +74,11 @@
                 localStorage.setItem("jwt", body.token);
                 alert(body.message);
                 if (body.role.toLowerCase() === "admin") {
-                  window.location.href = "/admin/dashboard";
+                  window.location.href = "/dashboard/admin";
                 } else {
-                  window.location.href = "/user/dashboard";
+                  window.location.href = "/dashboard/user";
                 }
+
               } else {
                 throw new Error("Role or token not found in response.");
               }
