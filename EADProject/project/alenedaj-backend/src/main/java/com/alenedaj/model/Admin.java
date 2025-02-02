@@ -4,8 +4,10 @@ import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+@Getter
+@Setter
 @Document(collection = "admins")
-@Getter @Setter @NoArgsConstructor @AllArgsConstructor
+@NoArgsConstructor @AllArgsConstructor
 public class Admin {
     @Id
     private String id;

@@ -143,7 +143,7 @@ public class AuthService {
                 .orElseThrow(() -> new RuntimeException("User not found"));
         // Build a map with user details. Adjust keys as desired.
         return java.util.Map.of(
-                "id", user.getId().toHexString(),  // assuming the id is an ObjectId
+                "id", user.getId().toHexString(),
                 "name", user.getName(),
                 "email", user.getEmail(),
                 "role", user.getRoles().iterator().next()
