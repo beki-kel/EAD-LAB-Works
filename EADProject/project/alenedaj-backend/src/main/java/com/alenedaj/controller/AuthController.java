@@ -84,7 +84,7 @@ public class AuthController {
             jwtCookie.setMaxAge(24 * 60 * 60);
             response.addCookie(jwtCookie);
 
-            return ResponseEntity.ok(Map.of("message", "Login successful", "role", role));
+            return ResponseEntity.ok(Map.of("message", "Login successful", "role", role, "token", token));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
@@ -118,8 +118,8 @@ public class AuthController {
     @GetMapping("/api/user-info")
     public ResponseEntity<Map<String, String>> getUserInfo(@RequestParam String email) {
         try {
-            String role = authService.getUserRole(email);
-            return ResponseEntity.ok(Map.of("email", email, "role", role));
+            Map<String, String> userInfo = authService.getUserInfo(email);
+            return ResponseEntity.ok(userInfo);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
